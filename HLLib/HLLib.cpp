@@ -229,7 +229,6 @@ HLLIB_API hlBool hlGetUnsignedIntegerValidate(HLOption eOption, hlUInt *pValue)
 			}
 		}
 		return hlTrue;
-		break;
 	case HL_PACKAGE_SIZE:
 		if(pPackage == 0 || !pPackage->GetOpened() || !pPackage->GetMapping())
 		{
@@ -238,7 +237,6 @@ HLLIB_API hlBool hlGetUnsignedIntegerValidate(HLOption eOption, hlUInt *pValue)
 
 		*pValue = static_cast<hlUInt>(pPackage->GetMapping()->GetMappingSize());
 		return hlTrue;
-		break;
 	case HL_PACKAGE_TOTAL_ALLOCATIONS:
 		if(pPackage == 0 || !pPackage->GetOpened() || !pPackage->GetMapping())
 		{
@@ -247,7 +245,6 @@ HLLIB_API hlBool hlGetUnsignedIntegerValidate(HLOption eOption, hlUInt *pValue)
 
 		*pValue = pPackage->GetMapping()->GetTotalAllocations();
 		return hlTrue;
-		break;
 	case HL_PACKAGE_TOTAL_MEMORY_ALLOCATED:
 		if(pPackage == 0 || !pPackage->GetOpened() || !pPackage->GetMapping())
 		{
@@ -256,7 +253,6 @@ HLLIB_API hlBool hlGetUnsignedIntegerValidate(HLOption eOption, hlUInt *pValue)
 
 		*pValue = static_cast<hlUInt>(pPackage->GetMapping()->GetTotalMemoryAllocated());
 		return hlTrue;
-		break;
 	case HL_PACKAGE_TOTAL_MEMORY_USED:
 		if(pPackage == 0 || !pPackage->GetOpened() || !pPackage->GetMapping())
 		{
@@ -265,7 +261,6 @@ HLLIB_API hlBool hlGetUnsignedIntegerValidate(HLOption eOption, hlUInt *pValue)
 
 		*pValue = static_cast<hlUInt>(pPackage->GetMapping()->GetTotalMemoryUsed());
 		return hlTrue;
-		break;
 	default:
 		return hlFalse;
 	}
@@ -321,7 +316,6 @@ HLLIB_API hlBool hlGetUnsignedLongLongValidate(HLOption eOption, hlULongLong *pV
 			}
 		}
 		return hlTrue;
-		break;
 	case HL_PACKAGE_SIZE:
 		if(pPackage == 0 || !pPackage->GetOpened() || !pPackage->GetMapping())
 		{
@@ -330,7 +324,6 @@ HLLIB_API hlBool hlGetUnsignedLongLongValidate(HLOption eOption, hlULongLong *pV
 
 		*pValue = pPackage->GetMapping()->GetMappingSize();
 		return hlTrue;
-		break;
 	case HL_PACKAGE_TOTAL_ALLOCATIONS:
 		if(pPackage == 0 || !pPackage->GetOpened() || !pPackage->GetMapping())
 		{
@@ -339,7 +332,6 @@ HLLIB_API hlBool hlGetUnsignedLongLongValidate(HLOption eOption, hlULongLong *pV
 
 		*pValue = static_cast<hlULongLong>(pPackage->GetMapping()->GetTotalAllocations());
 		return hlTrue;
-		break;
 	case HL_PACKAGE_TOTAL_MEMORY_ALLOCATED:
 		if(pPackage == 0 || !pPackage->GetOpened() || !pPackage->GetMapping())
 		{
@@ -348,7 +340,6 @@ HLLIB_API hlBool hlGetUnsignedLongLongValidate(HLOption eOption, hlULongLong *pV
 
 		*pValue = pPackage->GetMapping()->GetTotalMemoryAllocated();
 		return hlTrue;
-		break;
 	case HL_PACKAGE_TOTAL_MEMORY_USED:
 		if(pPackage == 0 || !pPackage->GetOpened() || !pPackage->GetMapping())
 		{
@@ -357,7 +348,6 @@ HLLIB_API hlBool hlGetUnsignedLongLongValidate(HLOption eOption, hlULongLong *pV
 
 		*pValue = pPackage->GetMapping()->GetTotalMemoryUsed();
 		return hlTrue;
-		break;
 	default:
 		return hlFalse;
 	}
