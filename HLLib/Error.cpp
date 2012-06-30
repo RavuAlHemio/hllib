@@ -139,7 +139,7 @@ hlVoid CError::SetSystemErrorMessageFormated(const hlChar *lpFormat, ...)
 
 		hlUInt uiLength = (hlUInt)strlen(this->lpSystemError);
 
-		while(uiLength >= 0 && isspace(this->lpSystemError[uiLength - 1]))
+		while(isspace(this->lpSystemError[uiLength - 1]))
 		{
 			uiLength--;
 		}
