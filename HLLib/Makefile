@@ -1,4 +1,6 @@
 CXX		=	g++
+AR		=	ar
+RANLIB		=	ranlib
 HLLIB_VERS	=	2.3.0
 LDFLAGS		=	-shared -Wl,-soname,libhl.so.2
 CXXFLAGS	=	-O2 -g -fpic -funroll-loops -fvisibility=hidden
@@ -15,7 +17,7 @@ objs		=	$(sources:.cpp=.o)
 .cpp.o:
 	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
-all: libhl.so.$(HLLIB_VERS)
+all: libhl.so.$(HLLIB_VERS) libhl.a
 
 clean:
 	rm -f \#* *~ *.o *.so.*
@@ -29,3 +31,7 @@ install: libhl.so.$(HLLIB_VERS)
 
 libhl.so.$(HLLIB_VERS): $(objs)
 	$(CXX) $(LDFLAGS) -o $@ $(objs)
+
+libhl.a: $(objs)
+	$(AR) -rcu $@ $^
+	$(RANLIB) $@
