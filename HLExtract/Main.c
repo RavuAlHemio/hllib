@@ -714,6 +714,7 @@ hlVoid ProgressUpdate(hlULongLong uiBytesDone, hlULongLong uiBytesTotal)
 				printf(".");
 			}
 		}
+		fflush(stdout);
 #endif
 	}
 }
