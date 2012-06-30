@@ -50,10 +50,12 @@
 
 #ifdef _WIN32
 #	define WIN32_LEAN_AND_MEAN
+#	define UNUSED
 #	include <windows.h>
 #else
 #	include <linux/limits.h>
 #	define MAX_PATH PATH_MAX
+#	define UNUSED __attribute__((__unused__))
 
 #	define FOREGROUND_BLUE      0x0001
 #	define FOREGROUND_GREEN     0x0002
@@ -569,6 +571,8 @@ hlVoid SetColor(hlUInt16 uiColor)
     }
 
 	SetConsoleTextAttribute(Handle, uiColor);
+#else
+	(void)uiColor;
 #endif
 }
 
@@ -730,7 +734,7 @@ hlVoid ExtractItemStartCallback(HLDirectoryItem *pItem)
 	}
 }
 
-hlVoid FileProgressCallback(HLDirectoryItem *pFile, hlUInt uiBytesExtracted, hlUInt uiBytesTotal, hlBool *pCancel)
+hlVoid FileProgressCallback(HLDirectoryItem *pFile UNUSED, hlUInt uiBytesExtracted, hlUInt uiBytesTotal, hlBool *pCancel UNUSED)
 {
 	ProgressUpdate((hlULongLong)uiBytesExtracted, (hlULongLong)uiBytesTotal);
 }
@@ -789,7 +793,7 @@ hlVoid ExtractItemEndCallback(HLDirectoryItem *pItem, hlBool bSuccess)
 	}
 }
 
-hlVoid DefragmentProgressCallback(HLDirectoryItem *pFile, hlUInt uiFilesDefragmented, hlUInt uiFilesTotal, hlULongLong uiBytesDefragmented, hlULongLong uiBytesTotal, hlBool *pCancel)
+hlVoid DefragmentProgressCallback(HLDirectoryItem *pFile UNUSED, hlUInt uiFilesDefragmented UNUSED, hlUInt uiFilesTotal UNUSED, hlULongLong uiBytesDefragmented, hlULongLong uiBytesTotal, hlBool *pCancel UNUSED)
 {
 	ProgressUpdate(uiBytesDefragmented, uiBytesTotal);
 }
