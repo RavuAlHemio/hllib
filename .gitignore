@@ -1,0 +1,16 @@
+# Unix build spam
+*.o
+*.so
+lib*.so.*
+*.a
+HLExtract/hlextract
+
+# Windows build spam
+*.obj
+*.dll
+*.lib
+*.exe
+
+# Vim spam
+*.swp
+*.swo
