@@ -657,6 +657,8 @@ hlVoid List(FILE *pFile, HLDirectoryItem *pItem, hlBool bListFolders, hlBool bLi
 			fprintf(pFile, "%s\n", lpPath);
 		}
 		break;
+	default:
+		break;
 	}
 }
 
@@ -843,6 +845,8 @@ HLValidation Validate(HLDirectoryItem *pItem)
 				PrintValidation(eValidation);
 				printf("\n");
 				break;
+			default:
+				break;
 			}
 		}
 		else
@@ -850,6 +854,8 @@ HLValidation Validate(HLDirectoryItem *pItem)
 			PrintValidation(eValidation);
 			printf("  \n");
 		}
+		break;
+	default:
 		break;
 	}
 
@@ -881,6 +887,8 @@ hlVoid PrintAttribute(hlChar *lpPrefix, HLAttribute *pAttribute, hlChar *lpPostf
 		break;
 	case HL_ATTRIBUTE_STRING:
 		printf("%s%s: %s%s\n", lpPrefix, pAttribute->lpName, pAttribute->Value.String.lpValue, lpPostfix);
+		break;
+	default:
 		break;
 	}
 }
@@ -1150,6 +1158,8 @@ hlVoid EnterConsole(hlUInt uiPackage, hlUInt uiConsoleCommands, hlChar *lpConsol
 						//printf("  Validates: %s\n", hlFileGetValidates(pSubItem) ? "True" : "False");
 						printf("  Size: %u B\n", hlFileGetSize(pSubItem));
 						printf("  Size On Disk: %u B\n", hlFileGetSizeOnDisk(pSubItem));
+						break;
+					default:
 						break;
 					}
 
