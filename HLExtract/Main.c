@@ -31,7 +31,7 @@
 #		endif
 #	endif
 #else
-#	include <hl.h>
+#	include "../lib/HLLib.h"
 #endif
 
 #if _MSC_VER
