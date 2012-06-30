@@ -15,7 +15,7 @@
 using namespace HLLib;
 using namespace HLLib::Mapping;
 
-CView::CView(CMapping *pMapping, hlVoid *lpView, hlULongLong uiAllocationOffset, hlULongLong uiAllocationLength, hlULongLong uiOffset, hlULongLong uiLength) : pMapping(pMapping), lpView(lpView), uiAllocationOffset(uiAllocationOffset), uiAllocationLength(uiAllocationLength), uiOffset(uiOffset), uiLength(uiLength == 0 ? uiAllocationLength - uiOffset : uiLength)
+CView::CView(CMapping *pMapping, hlVoid *lpView, hlULongLong uiAllocationOffset, hlULongLong uiAllocationLength, hlULongLong uiOffset, hlULongLong uiLength) : pMapping(pMapping), lpView(lpView), uiOffset(uiOffset), uiLength(uiLength == 0 ? uiAllocationLength - uiOffset : uiLength), uiAllocationOffset(uiAllocationOffset), uiAllocationLength(uiAllocationLength)
 {
 	assert(this->uiOffset + this->uiLength <= this->uiAllocationLength);
 }
