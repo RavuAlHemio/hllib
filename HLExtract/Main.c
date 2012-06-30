@@ -899,8 +899,6 @@ hlVoid PrintAttribute(hlChar *lpPrefix, HLAttribute *pAttribute, hlChar *lpPostf
 
 hlVoid PrintValidation(HLValidation eValidation)
 {
-	hlUInt16 uiColor = GetColor();
-
 	switch(eValidation)
 	{
 	case HL_VALIDATES_ASSUMED_OK:
