@@ -330,9 +330,13 @@ hlBool CZIPFile::GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackage
 					delete []lpComment;
 					return hlTrue;
 				}
+				default:
+					break;
 			}
 			break;
 		}
+		default:
+			break;
 	}
 
 	return hlFalse;

@@ -203,10 +203,14 @@ hlBool CBSPFile::GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackage
 						hlAttributeSetUnsignedInteger(&Attribute, this->lpItemAttributeNames[eAttribute], uiPaletteSize, hlFalse);
 						return hlTrue;
 					}
+					default:
+						break;
 				}
 			}
 			break;
 		}
+		default:
+			break;
 	}
 
 	return hlFalse;

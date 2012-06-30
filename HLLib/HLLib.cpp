@@ -153,6 +153,8 @@ HLLIB_API hlBool hlGetBooleanValidate(HLOption eOption, hlBool *pValue)
 	case HL_PACKAGE_BOUND:
 		*pValue = pPackage != 0;
 		return hlTrue;
+	default:
+		break;
 	}
 
 	return hlFalse;
@@ -170,6 +172,8 @@ HLLIB_API hlVoid hlSetBoolean(HLOption eOption, hlBool bValue)
 		break;
 	case HL_FORCE_DEFRAGMENT:
 		bForceDefragment = bValue;
+		break;
+	default:
 		break;
 	}
 }
@@ -532,6 +536,8 @@ HLLIB_API hlVoid hlSetVoid(HLOption eOption, const hlVoid *pValue)
 		break;
 	case HL_PROC_DEFRAGMENT_PROGRESS_EX:
 		pDefragmentProgressExProc = (PDefragmentProgressExProc)pValue;
+		break;
+	default:
 		break;
 	}
 }

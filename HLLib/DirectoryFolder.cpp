@@ -517,6 +517,8 @@ hlUInt CDirectoryFolder::GetSize(hlBool bRecurse) const
 		case HL_ITEM_FILE:
 			uiSize += static_cast<const CDirectoryFile *>(pItem)->GetSize();
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -540,6 +542,8 @@ hlULongLong CDirectoryFolder::GetSizeEx(hlBool bRecurse) const
 			break;
 		case HL_ITEM_FILE:
 			uiSize += static_cast<hlULongLong>(static_cast<const CDirectoryFile *>(pItem)->GetSize());
+			break;
+		default:
 			break;
 		}
 	}
@@ -565,6 +569,8 @@ hlUInt CDirectoryFolder::GetSizeOnDisk(hlBool bRecurse) const
 		case HL_ITEM_FILE:
 			uiSize += static_cast<const CDirectoryFile *>(pItem)->GetSizeOnDisk();
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -589,6 +595,8 @@ hlULongLong CDirectoryFolder::GetSizeOnDiskEx(hlBool bRecurse) const
 		case HL_ITEM_FILE:
 			uiSize += static_cast<hlULongLong>(static_cast<const CDirectoryFile *>(pItem)->GetSizeOnDisk());
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -610,6 +618,8 @@ hlUInt CDirectoryFolder::GetFolderCount(hlBool bRecurse) const
 			{
 				uiCount += static_cast<const CDirectoryFolder *>(pItem)->GetFolderCount(bRecurse);
 			}
+			break;
+		default:
 			break;
 		}
 	}
@@ -634,6 +644,8 @@ hlUInt CDirectoryFolder::GetFileCount(hlBool bRecurse) const
 			break;
 		case HL_ITEM_FILE:
 			uiCount++;
+			break;
+		default:
 			break;
 		}
 	}
