@@ -14,13 +14,13 @@ sources		=	BSPFile.cpp Checksum.cpp DebugMemory.cpp DirectoryFile.cpp \
 			WADFile.cpp Wrapper.cpp XZPFile.cpp ZIPFile.cpp
 objs		=	$(sources:.cpp=.o)
 
-.cpp.o:
-	$(CXX) -c $(CXXFLAGS) -o $@ $<
-
 all: libhl.so.$(HLLIB_VERS) libhl.a
 
+%.o: %.cpp
+	$(CXX) -c $(CXXFLAGS) -o $@ $^
+
 clean:
-	rm -f \#* *~ *.o *.so.*
+	rm -f libhl.so.$(HLLIB_VERS) libhl.a $(objs)
 
 install: libhl.so.$(HLLIB_VERS)
 	install -g root -m 0755 -o root -d $(PREFIX)/lib $(PREFIX)/include
