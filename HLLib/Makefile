@@ -35,3 +35,5 @@ libhl.so.$(HLLIB_VERS): $(objs)
 libhl.a: $(objs)
 	$(AR) -rcu $@ $^
 	$(RANLIB) $@
+
+.PHONY: all clean install
