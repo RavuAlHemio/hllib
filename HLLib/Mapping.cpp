@@ -207,7 +207,7 @@ hlBool CMapping::Unmap(CView *&pView)
 	return hlFalse;
 }
 
-hlVoid CMapping::UnmapInternal(CView &View)
+hlVoid CMapping::UnmapInternal(CView &)
 {
 
 }
@@ -244,7 +244,7 @@ hlBool CMapping::Commit(CView &View, hlULongLong uiOffset, hlULongLong uiLength)
 	return this->CommitInternal(View, uiOffset, uiLength);
 }
 
-hlBool CMapping::CommitInternal(CView &View, hlULongLong uiOffset, hlULongLong uiLength)
+hlBool CMapping::CommitInternal(CView &, hlULongLong , hlULongLong )
 {
 	return hlTrue;
 }

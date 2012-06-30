@@ -193,7 +193,7 @@ HLLIB_API hlBool hlGetIntegerValidate(HLOption eOption, hlInt *pValue)
 	return bResult;
 }
 
-HLLIB_API hlVoid hlSetInteger(HLOption eOption, hlInt iValue)
+HLLIB_API hlVoid hlSetInteger(HLOption , hlInt )
 {
 
 }
@@ -266,7 +266,7 @@ HLLIB_API hlBool hlGetUnsignedIntegerValidate(HLOption eOption, hlUInt *pValue)
 	}
 }
 
-HLLIB_API hlVoid hlSetUnsignedInteger(HLOption eOption, hlUInt iValue)
+HLLIB_API hlVoid hlSetUnsignedInteger(HLOption , hlUInt )
 {
 
 }
@@ -286,7 +286,7 @@ HLLIB_API hlBool hlGetLongLongValidate(HLOption eOption, hlLongLong *pValue)
 	return bResult;
 }
 
-HLLIB_API hlVoid hlSetLongLong(HLOption eOption, hlLongLong iValue)
+HLLIB_API hlVoid hlSetLongLong(HLOption , hlLongLong )
 {
 
 }
@@ -353,7 +353,7 @@ HLLIB_API hlBool hlGetUnsignedLongLongValidate(HLOption eOption, hlULongLong *pV
 	}
 }
 
-HLLIB_API hlVoid hlSetUnsignedLongLong(HLOption eOption, hlULongLong iValue)
+HLLIB_API hlVoid hlSetUnsignedLongLong(HLOption , hlULongLong )
 {
 
 }
@@ -365,12 +365,12 @@ HLLIB_API hlFloat hlGetFloat(HLOption eOption)
 	return fValue;
 }
 
-HLLIB_API hlBool hlGetFloatValidate(HLOption eOption, hlFloat *pValue)
+HLLIB_API hlBool hlGetFloatValidate(HLOption , hlFloat *)
 {
 	return hlFalse;
 }
 
-HLLIB_API hlVoid hlSetFloat(HLOption eOption, hlFloat fValue)
+HLLIB_API hlVoid hlSetFloat(HLOption , hlFloat )
 {
 	
 }
@@ -406,7 +406,7 @@ HLLIB_API hlBool hlGetStringValidate(HLOption eOption, const hlChar **pValue)
 	}
 }
 
-HLLIB_API hlVoid hlSetString(HLOption eOption, const hlChar *lpValue)
+HLLIB_API hlVoid hlSetString(HLOption , const hlChar *)
 {
 
 }
