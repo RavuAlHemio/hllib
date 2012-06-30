@@ -207,9 +207,8 @@ hlULongLong CFileStream::Seek(hlLongLong iOffset, HLSeekMode eSeekMode)
 	hlInt iMode = SEEK_SET;
 	switch(eSeekMode)
 	{
-	/*case HL_SEEK_BEGINNING:
-		iMode = SEEK_SET;
-		break;*/
+	case HL_SEEK_BEGINNING:
+		break;
 	case HL_SEEK_CURRENT:
 		iMode = SEEK_CUR;
 		break;
