@@ -1,6 +1,6 @@
 /*
  * HLExtract.Net
- * Copyright (C) 2008-2010 Ryan Gregg
+ * Copyright (C) 2008-2012 Ryan Gregg
 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,8 +19,8 @@ using System.Runtime.InteropServices;
 public sealed class HLLib
 {
     #region Constants
-    public const int HL_VERSION_NUMBER = ((2 << 24) | (4 << 16) | (2 << 8) | 0);
-    public const string HL_VERSION_STRING = "2.4.2";
+    public const int HL_VERSION_NUMBER = ((2 << 24) | (4 << 16) | (3 << 8) | 0);
+    public const string HL_VERSION_STRING = "2.4.3";
 
     public const uint HL_ID_INVALID = 0xffffffff;
 
@@ -143,7 +143,8 @@ public sealed class HLLib
 	    HL_PACKAGE_XZP,
 	    HL_PACKAGE_ZIP,
 	    HL_PACKAGE_NCF,
-	    HL_PACKAGE_VPK
+        HL_PACKAGE_VPK,
+        HL_PACKAGE_SGA
     }
 
     public enum HLAttributeType : uint
@@ -193,6 +194,19 @@ public sealed class HLLib
 
         HL_PAK_PACKAGE_COUNT = 0,
         HL_PAK_ITEM_COUNT = 0,
+
+        HL_SGA_PACKAGE_VERSION_MAJOR = 0,
+        HL_SGA_PACKAGE_VERSION_MINOR,
+        HL_SGA_PACKAGE_MD5_FILE,
+        HL_SGA_PACKAGE_NAME,
+        HL_SGA_PACKAGE_MD5_HEADER,
+        HL_SGA_PACKAGE_COUNT,
+        HL_SGA_ITEM_SECTION_ALIAS = 0,
+        HL_SGA_ITEM_SECTION_NAME,
+        HL_SGA_ITEM_MODIFIED,
+        HL_SGA_ITEM_TYPE,
+        HL_SGA_ITEM_CRC,
+        HL_SGA_ITEM_COUNT,
 
         HL_VBSP_PACKAGE_VERSION = 0,
         HL_VBSP_PACKAGE_MAP_REVISION,

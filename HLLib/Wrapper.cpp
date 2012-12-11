@@ -1,6 +1,6 @@
 /*
  * HLLib
- * Copyright (C) 2006-2010 Ryan Gregg
+ * Copyright (C) 2006-2012 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -513,6 +513,7 @@ HLPackageTest lpPackageTests[] =
 	{ HL_PACKAGE_GCF, 8, { 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00 } },
 	{ HL_PACKAGE_NCF, 8, { 0x01, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00 } },
 	{ HL_PACKAGE_PAK, 4, { 'P', 'A', 'C', 'K' } },
+	{ HL_PACKAGE_SGA, 8, { '_', 'A', 'R', 'C', 'H', 'I', 'V', 'E' } },
 	{ HL_PACKAGE_VBSP, 4, { 'V', 'B', 'S', 'P' } },
 	{ HL_PACKAGE_VPK, 4, { 0x34, 0x12, 0xaa, 0x55 } },
 	{ HL_PACKAGE_WAD, 4, { 'W', 'A', 'D', '3' } },
@@ -595,6 +596,9 @@ HLLIB_API hlBool hlCreatePackage(HLPackageType ePackageType, hlUInt *uiPackage)
 		break;
 	case HL_PACKAGE_PAK:
 		pNewPackage = new CPAKFile();
+		break;
+	case HL_PACKAGE_SGA:
+		pNewPackage = new CSGAFile();
 		break;
 	case HL_PACKAGE_VBSP:
 		pNewPackage = new CVBSPFile();

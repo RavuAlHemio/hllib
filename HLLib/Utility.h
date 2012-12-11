@@ -1,6 +1,6 @@
 /*
  * HLLib
- * Copyright (C) 2006-2010 Ryan Gregg
+ * Copyright (C) 2006-2012 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,15 +17,19 @@
 
 namespace HLLib
 {
-	hlBool GetFileExists(const hlChar *lpPath);
-	hlBool GetFolderExists(const hlChar *lpPath);
+	extern hlBool GetFileExists(const hlChar *lpPath);
+	extern hlBool GetFolderExists(const hlChar *lpPath);
 
-	hlBool GetFileSize(const hlChar *lpPath, hlUInt &uiFileSize);
+	extern hlBool GetFileSize(const hlChar *lpPath, hlUInt &uiFileSize);
 
-	hlBool CreateFolder(const hlChar *lpPath);
+	extern hlBool CreateFolder(const hlChar *lpPath);
 
-	hlVoid FixupIllegalCharacters(hlChar *lpName);
-	hlVoid RemoveIllegalCharacters(hlChar *lpName);
+	extern hlVoid FixupIllegalCharacters(hlChar *lpName);
+	extern hlVoid RemoveIllegalCharacters(hlChar *lpName);
+
+	extern hlChar NibbleToChar(hlByte uiNibble);
+	extern hlUInt BufferToHexString(const hlByte *lpBuffer, hlUInt uiBufferSize, hlChar* lpString, hlUInt uiStringSize);
+	extern hlUInt WStringToString(const hlWChar *lpSource, hlChar* lpDest, hlUInt uiDestSize);
 }
 
 #endif

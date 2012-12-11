@@ -1,6 +1,6 @@
 /*
  * HLLib
- * Copyright (C) 2006-2010 Ryan Gregg
+ * Copyright (C) 2006-2012 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -678,7 +678,11 @@ hlBool CDirectoryFolder::Extract(const hlChar *lpPath) const
 
 		for(hlUInt i = 0; i < this->pDirectoryItemVector->size(); i++)
 		{
-			bResult &= (*this->pDirectoryItemVector)[i]->Extract(lpFolderName);
+			const CDirectoryItem *pItem = (*this->pDirectoryItemVector)[i];
+			if(pItem->GetType() != HL_ITEM_FILE || static_cast<const CDirectoryFile *>(pItem)->GetExtractable())
+			{
+				bResult &= pItem->Extract(lpFolderName);
+			}
 		}
 	}
 
