@@ -9,11 +9,11 @@ Library/Author Information:
 ===========================
 
 ---- General Library Information ----
-Date                     : May 22nd, 2011
+Date                     : September 18th, 2012
 Author                   : Ryan Gregg
                            Michael Mohr (Linux Port)
 Title                    : HLLib
-Build                    : 2.4.2
+Build                    : 2.4.3
 Email address            : ryansgregg@hotmail.com (Ryan Gregg)
                            m.mohr@laposte.net (Michael Mohr)
 Home page /  Website     : http://nemesis.thewavelength.net/
@@ -93,6 +93,11 @@ Console Commands (Interactive console mode):
 Library Changelog:
 ==================
 
+  v2.4.3
+  - Added support for new VPK file format (v2).
+  - Added SGA file support.
+  - Added ZIP deflate support.
+
   v2.4.2
   - Fixed crash when opening VBSP files with no pak file lump.
 
@@ -117,7 +122,7 @@ Library Changelog:
   - Added support for new VBSP file format.
 
   v2.1.1
-  - Added support for new VPK file format.
+  - Added support for new VPK file format (v1).
   - Added VPK file validation.
   - Fixed crash when closing VPK files.
 

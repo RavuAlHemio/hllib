@@ -1,6 +1,6 @@
 /*
  * HLLib
- * Copyright (C) 2006-2010 Ryan Gregg
+ * Copyright (C) 2006-2012 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -13,6 +13,69 @@
 #include "ZIPFile.h"
 #include "Streams.h"
 #include "Checksum.h"
+
+#if USE_ZLIB
+#	ifdef _WIN32
+#		define ZLIB_WINAPI
+#	endif
+#	include <zlib.h>
+
+struct OutDesc
+{
+	Bytef *dest;
+	uLongf destLen;
+};
+
+static unsigned in(void FAR *in_desc, unsigned char FAR * FAR *input)
+{
+	return 0;
+}
+
+static int out(void FAR *out_desc, unsigned char FAR *ouput, unsigned len)
+{
+	if(len <= ((OutDesc*)(out_desc))->destLen)
+	{
+		memcpy(((OutDesc*)(out_desc))->dest, ouput, len);
+		((OutDesc*)(out_desc))->dest += len;
+		((OutDesc*)(out_desc))->destLen -= len;
+		return 0;
+	}
+	return 1;
+}
+
+static int uncompressBack(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen)
+{
+    z_stream stream;
+    int err;
+
+    stream.next_in = (Bytef*)source;
+    stream.avail_in = (uInt)sourceLen;
+
+    stream.next_out = dest;
+    stream.avail_out = (uInt)*destLen;
+
+    stream.zalloc = (alloc_func)0;
+    stream.zfree = (free_func)0;
+
+	unsigned char window[32768];
+    err = inflateBackInit(&stream, 15, window);
+    if (err != Z_OK) return err;
+
+	OutDesc out_desc = { dest, *destLen };
+    err = inflateBack(&stream, in, 0, out, &out_desc);
+    if (err != Z_STREAM_END) {
+        inflateBackEnd(&stream);
+        if (err == Z_NEED_DICT || (err == Z_BUF_ERROR && stream.avail_in == 0))
+            return Z_DATA_ERROR;
+        return err;
+    }
+    *destLen = *destLen - out_desc.destLen;
+
+    err = inflateBackEnd(&stream);
+    return err;
+}
+
+#endif
 
 using namespace HLLib;
 
@@ -346,7 +409,18 @@ hlBool CZIPFile::GetFileExtractableInternal(const CDirectoryFile *pFile, hlBool 
 {
 	const ZIPFileHeader *pDirectoryItem = static_cast<const ZIPFileHeader *>(pFile->GetData());
 
-	bExtractable = pDirectoryItem->uiCompressionMethod == 0 && pDirectoryItem->uiDiskNumberStart == this->pEndOfCentralDirectoryRecord->uiNumberOfThisDisk;
+	switch(pDirectoryItem->uiCompressionMethod)
+	{
+	case 0: // None.
+#if USE_ZLIB
+	case 8: // Deflate.
+#endif
+		bExtractable = (pDirectoryItem->uiFlags & 0x01u) == 0 && pDirectoryItem->uiDiskNumberStart == this->pEndOfCentralDirectoryRecord->uiNumberOfThisDisk;
+		break;
+	default:
+		bExtractable = hlFalse;
+		break;
+	}
 
 	return hlTrue;
 }
@@ -355,7 +429,8 @@ hlBool CZIPFile::GetFileValidationInternal(const CDirectoryFile *pFile, HLValida
 {
 	const ZIPFileHeader *pDirectoryItem = static_cast<const ZIPFileHeader *>(pFile->GetData());
 
-	if(pDirectoryItem->uiCompressionMethod != 0 || pDirectoryItem->uiDiskNumberStart != this->pEndOfCentralDirectoryRecord->uiNumberOfThisDisk)
+	hlBool bExtractable = false;
+	if(!GetFileExtractableInternal(pFile, bExtractable) || !bExtractable)
 	{
 		eValidation = HL_VALIDATES_ASSUMED_OK;
 		return hlTrue;
@@ -423,9 +498,21 @@ hlBool CZIPFile::CreateStreamInternal(const CDirectoryFile *pFile, Streams::IStr
 {
 	const ZIPFileHeader *pDirectoryItem = static_cast<const ZIPFileHeader *>(pFile->GetData());
 
-	if(pDirectoryItem->uiCompressionMethod != 0)
+	switch(pDirectoryItem->uiCompressionMethod)
 	{
+	case 0: // None.
+#if USE_ZLIB
+	case 8: // Deflate.
+#endif
+		break;
+	default:
 		LastError.SetErrorMessageFormated("Compression format %#.2x not supported.", pDirectoryItem->uiCompressionMethod);
+		return hlFalse;
+	}
+
+	if((pDirectoryItem->uiFlags & 0x01u) != 0)
+	{
+		LastError.SetErrorMessageFormated("File is encrypted.");
 		return hlFalse;
 	}
 
@@ -442,17 +529,77 @@ hlBool CZIPFile::CreateStreamInternal(const CDirectoryFile *pFile, Streams::IStr
 		return hlFalse;
 	}
 
-	const ZIPLocalFileHeader DirectoryEntry = *static_cast<const ZIPLocalFileHeader *>(pDirectoryEnrtyView->GetView());
+	ZIPLocalFileHeader DirectoryEntry = *static_cast<const ZIPLocalFileHeader *>(pDirectoryEnrtyView->GetView());
 
 	this->pMapping->Unmap(pDirectoryEnrtyView);
 
+	if((DirectoryEntry.uiFlags & 0x08u) != 0)
+	{
+		DirectoryEntry.uiCRC32 = pDirectoryItem->uiCRC32;
+		DirectoryEntry.uiUncompressedSize = pDirectoryItem->uiUncompressedSize;
+		DirectoryEntry.uiCompressedSize = pDirectoryItem->uiCompressedSize;
+	}
+
 	if(DirectoryEntry.uiSignature != HL_ZIP_LOCAL_FILE_HEADER_SIGNATURE)
 	{
-		LastError.SetErrorMessageFormated("Invalid file data offset.", pDirectoryItem->uiDiskNumberStart);
+		LastError.SetErrorMessageFormated("Invalid file data offset.");
 		return hlFalse;
 	}
 
-	pStream = new Streams::CMappingStream(*this->pMapping, pDirectoryItem->uiRelativeOffsetOfLocalHeader + sizeof(ZIPLocalFileHeader) + DirectoryEntry.uiFileNameLength + DirectoryEntry.uiExtraFieldLength, DirectoryEntry.uiUncompressedSize);
+	switch(pDirectoryItem->uiCompressionMethod)
+	{
+		case 0: // None.
+		{
+			pStream = new Streams::CMappingStream(*this->pMapping, pDirectoryItem->uiRelativeOffsetOfLocalHeader + sizeof(ZIPLocalFileHeader) + DirectoryEntry.uiFileNameLength + DirectoryEntry.uiExtraFieldLength, DirectoryEntry.uiUncompressedSize);
+			return hlTrue;
+		}
+#if USE_ZLIB
+		case 8: // Deflate.
+		{
+			Mapping::CView *pFileDataView = 0;
+			if(this->pMapping->Map(pFileDataView, pDirectoryItem->uiRelativeOffsetOfLocalHeader + sizeof(ZIPLocalFileHeader) + DirectoryEntry.uiFileNameLength + DirectoryEntry.uiExtraFieldLength, DirectoryEntry.uiCompressedSize))
+			{
+				hlBool bResult = hlFalse;
+				hlByte *lpInflateBuffer = new hlByte[DirectoryEntry.uiUncompressedSize];
+				uLongf iInflateSize = DirectoryEntry.uiUncompressedSize;
+				switch(uncompressBack(lpInflateBuffer, &iInflateSize, static_cast<const hlByte *>(pFileDataView->GetView()), (uLong)DirectoryEntry.uiCompressedSize))
+				{
+				case Z_OK:
+					pStream = new Streams::CMemoryStream(lpInflateBuffer, iInflateSize);
+					bResult = hlTrue;
+					break;
+				case Z_MEM_ERROR:
+					delete []lpInflateBuffer;
+					LastError.SetErrorMessage("Deflate Error: Z_MEM_ERROR.");
+					break;
+				case Z_BUF_ERROR:
+					delete []lpInflateBuffer;
+					LastError.SetErrorMessage("Deflate Error: Z_BUF_ERROR.");
+					break;
+				case Z_DATA_ERROR:
+					delete []lpInflateBuffer;
+					LastError.SetErrorMessage("Deflate Error: Z_DATA_ERROR.");
+					break;
+				default:
+					delete []lpInflateBuffer;
+					LastError.SetErrorMessage("Deflate Error: Unknown.");
+					break;
+				}
+				this->pMapping->Unmap(pFileDataView);
+				return bResult;
+			}
+			return hlFalse;
+		}
+#endif
+		default:
+			return hlFalse;
+	}
+}
 
-	return hlTrue;
+hlVoid CZIPFile::ReleaseStreamInternal(Streams::IStream &Stream) const
+{
+	if(Stream.GetType() == HL_STREAM_MEMORY)
+	{
+		delete []static_cast<const hlByte *>(static_cast<Streams::CMemoryStream &>(Stream).GetBuffer());
+	}
 }

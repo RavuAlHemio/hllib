@@ -1,6 +1,6 @@
 /*
  * HLLib
- * Copyright (C) 2006-2010 Ryan Gregg
+ * Copyright (C) 2006-2012 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -116,6 +116,7 @@ namespace HLLib
 		virtual hlBool GetFileSizeOnDiskInternal(const CDirectoryFile *pFile, hlUInt &uiSize) const;
 
 		virtual hlBool CreateStreamInternal(const CDirectoryFile *pFile, Streams::IStream *&pStream) const;
+		virtual hlVoid ReleaseStreamInternal(Streams::IStream &Stream) const;
 	};
 }
 

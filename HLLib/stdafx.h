@@ -1,6 +1,6 @@
 /*
  * HLLib
- * Copyright (C) 2006-2010 Ryan Gregg
+ * Copyright (C) 2006-2012 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,11 @@
 
 typedef unsigned char		hlBool;
 typedef char				hlChar;
+#ifdef __cplusplus
+typedef wchar_t				hlWChar;
+#else
+typedef unsigned short		hlWChar;
+#endif
 typedef unsigned char		hlByte;
 typedef signed short		hlShort;
 typedef unsigned short		hlUShort;
@@ -60,8 +65,8 @@ typedef hlSingle		hlFloat;
 #define hlFalse			0
 #define hlTrue			1
 
-#define HL_VERSION_NUMBER	((2 << 24) | (4 << 16) | (2 << 8) | 0)
-#define HL_VERSION_STRING	"2.4.2"
+#define HL_VERSION_NUMBER	((2 << 24) | (4 << 16) | (3 << 8) | 0)
+#define HL_VERSION_STRING	"2.4.3"
 
 #define HL_ID_INVALID 0xffffffff
 
@@ -186,7 +191,8 @@ typedef enum
 	HL_PACKAGE_XZP,
 	HL_PACKAGE_ZIP,
 	HL_PACKAGE_NCF,
-	HL_PACKAGE_VPK
+	HL_PACKAGE_VPK,
+	HL_PACKAGE_SGA
 } HLPackageType;
 
 typedef enum
@@ -236,6 +242,19 @@ typedef enum
 
 	HL_PAK_PACKAGE_COUNT = 0,
 	HL_PAK_ITEM_COUNT = 0,
+
+	HL_SGA_PACKAGE_VERSION_MAJOR = 0,
+	HL_SGA_PACKAGE_VERSION_MINOR,
+	HL_SGA_PACKAGE_MD5_FILE,
+	HL_SGA_PACKAGE_NAME,
+	HL_SGA_PACKAGE_MD5_HEADER,
+	HL_SGA_PACKAGE_COUNT,
+	HL_SGA_ITEM_SECTION_ALIAS = 0,
+	HL_SGA_ITEM_SECTION_NAME,
+	HL_SGA_ITEM_MODIFIED,
+	HL_SGA_ITEM_TYPE,
+	HL_SGA_ITEM_CRC,
+	HL_SGA_ITEM_COUNT,
 
 	HL_VBSP_PACKAGE_VERSION = 0,
 	HL_VBSP_PACKAGE_MAP_REVISION,

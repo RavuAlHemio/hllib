@@ -80,7 +80,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_USE_RTM_VERSION;HLLIB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_USE_RTM_VERSION;HLLIB_EXPORTS;USE_ZLIB=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -90,6 +90,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>E:\Projects\Utilities\ZLib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)HLLib.dll</OutputFile>
@@ -101,6 +102,8 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(OutDir)HLLib.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>E:\Projects\Utilities\ZLib\contrib\vstudio\vc10\x86\ZlibStatDebug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>zlibstat.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -109,7 +112,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_USE_RTM_VERSION;HLLIB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_USE_RTM_VERSION;HLLIB_EXPORTS;USE_ZLIB=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -119,6 +122,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>E:\Projects\Utilities\ZLib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)HLLib.dll</OutputFile>
@@ -130,6 +134,8 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(OutDir)HLLib.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
+      <AdditionalDependencies>zlibstat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\Projects\Utilities\ZLib\contrib\vstudio\vc10\x64\ZlibStatDebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -139,7 +145,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;HLLIB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;HLLIB_EXPORTS;USE_ZLIB=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -147,6 +153,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>E:\Projects\Utilities\ZLib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)HLLib.dll</OutputFile>
@@ -159,6 +166,8 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(OutDir)HLLib.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>E:\Projects\Utilities\ZLib\contrib\vstudio\vc10\x86\ZlibStatRelease</AdditionalLibraryDirectories>
+      <AdditionalDependencies>zlibstat.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -171,7 +180,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;HLLIB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;HLLIB_EXPORTS;USE_ZLIB=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -179,6 +188,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>E:\Projects\Utilities\ZLib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)HLLib.dll</OutputFile>
@@ -191,6 +201,8 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(OutDir)HLLib.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
+      <AdditionalLibraryDirectories>E:\Projects\Utilities\ZLib\contrib\vstudio\vc10\x64\ZlibStatRelease;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>zlibstat.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -198,6 +210,7 @@
     <ClCompile Include="..\..\..\HLLib\DebugMemory.cpp" />
     <ClCompile Include="..\..\..\HLLib\Error.cpp" />
     <ClCompile Include="..\..\..\HLLib\HLLib.cpp" />
+    <ClCompile Include="..\..\..\HLLib\SGAFile.cpp" />
     <ClCompile Include="..\..\..\HLLib\Utility.cpp" />
     <ClCompile Include="..\..\..\HLLib\Wrapper.cpp" />
     <ClCompile Include="..\..\..\HLLib\DirectoryFile.cpp" />
@@ -231,6 +244,7 @@
     <ClInclude Include="..\..\..\HLLib\Error.h" />
     <ClInclude Include="..\..\..\HLLib\HLLib.h" />
     <ClInclude Include="..\..\..\HLLib\resource.h" />
+    <ClInclude Include="..\..\..\HLLib\SGAFile.h" />
     <ClInclude Include="..\..\..\HLLib\stdafx.h" />
     <ClInclude Include="..\..\..\HLLib\Utility.h" />
     <ClInclude Include="..\..\..\HLLib\Wrapper.h" />

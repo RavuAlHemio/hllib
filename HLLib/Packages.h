@@ -1,6 +1,6 @@
 /*
  * HLLib
- * Copyright (C) 2006-2010 Ryan Gregg
+ * Copyright (C) 2006-2012 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -14,6 +14,7 @@
 #include "GCFFile.h"
 #include "NCFFile.h"
 #include "PAKFile.h"
+#include "SGAFile.h"
 #include "VBSPFile.h"
 #include "VPKFile.h"
 #include "WADFile.h"

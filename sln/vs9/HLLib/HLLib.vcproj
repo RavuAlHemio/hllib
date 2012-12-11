@@ -45,7 +45,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_USE_RTM_VERSION;HLLIB_EXPORTS"
+				AdditionalIncludeDirectories="E:\Projects\Utilities\ZLib"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_USE_RTM_VERSION;HLLIB_EXPORTS;USE_ZLIB=1"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
 				BasicRuntimeChecks="3"
@@ -66,8 +67,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="zlibstat.lib"
 				OutputFile="$(OutDir)/HLLib.dll"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="E:\Projects\Utilities\ZLib\contrib\vstudio\vc9\x86\ZlibStatDebug"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/HLLib.pdb"
 				SubSystem="2"
@@ -125,7 +128,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_USE_RTM_VERSION;HLLIB_EXPORTS"
+				AdditionalIncludeDirectories="E:\Projects\Utilities\ZLib"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_USE_RTM_VERSION;HLLIB_EXPORTS;USE_ZLIB=1"
 				MinimalRebuild="true"
 				ExceptionHandling="1"
 				BasicRuntimeChecks="3"
@@ -146,8 +150,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="zlibstat.lib"
 				OutputFile="$(OutDir)/HLLib.dll"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="E:\Projects\Utilities\ZLib\contrib\vstudio\vc9\x64\ZlibStatDebug"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/HLLib.pdb"
 				SubSystem="2"
@@ -209,7 +215,8 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;HLLIB_EXPORTS"
+				AdditionalIncludeDirectories="E:\Projects\Utilities\ZLib"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;HLLIB_EXPORTS;USE_ZLIB=1"
 				ExceptionHandling="1"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -228,8 +235,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="zlibstat.lib"
 				OutputFile="$(OutDir)/HLLib.dll"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="E:\Projects\Utilities\ZLib\contrib\vstudio\vc9\x86\ZlibStatRelease"
 				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -293,7 +302,8 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;HLLIB_EXPORTS"
+				AdditionalIncludeDirectories="E:\Projects\Utilities\ZLib"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;HLLIB_EXPORTS;USE_ZLIB=1"
 				ExceptionHandling="1"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -312,8 +322,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="zlibstat.lib"
 				OutputFile="$(OutDir)/HLLib.dll"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="E:\Projects\Utilities\ZLib\contrib\vstudio\vc9\x64\ZlibStatRelease"
 				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -415,6 +427,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\HLLib\PAKFile.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\HLLib\SGAFile.cpp"
 					>
 				</File>
 				<File
@@ -573,6 +589,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\HLLib\PAKFile.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\HLLib\SGAFile.h"
 					>
 				</File>
 				<File
