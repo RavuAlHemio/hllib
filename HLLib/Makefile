@@ -10,8 +10,8 @@ sources		=	BSPFile.cpp Checksum.cpp DebugMemory.cpp DirectoryFile.cpp \
 			FileStream.cpp GCFFile.cpp GCFStream.cpp HLLib.cpp \
 			Mapping.cpp MappingStream.cpp MemoryMapping.cpp MemoryStream.cpp \
 			NCFFile.cpp NullStream.cpp PAKFile.cpp Package.cpp ProcStream.cpp \
-			Stream.cpp StreamMapping.cpp Utility.cpp VBSPFile.cpp VPKFile.cpp \
-			WADFile.cpp Wrapper.cpp XZPFile.cpp ZIPFile.cpp
+			SGAFile.cpp Stream.cpp StreamMapping.cpp Utility.cpp VBSPFile.cpp \
+			VPKFile.cpp WADFile.cpp Wrapper.cpp XZPFile.cpp ZIPFile.cpp
 objs		=	$(sources:.cpp=.o)
 
 all: libhl.so.$(HLLIB_VERS) libhl.a
