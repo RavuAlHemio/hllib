@@ -1,6 +1,6 @@
 /*
  * HLLib
- * Copyright (C) 2006-2010 Ryan Gregg
+ * Copyright (C) 2006-2013 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -205,4 +205,160 @@ hlULong HLLib::CRC32(const hlByte *lpBuffer, hlUInt uiBufferSize, hlULong uiCRC)
 	}
 
     return uiCRC ^ 0xffffffffUL;
+}
+
+const hlULong lpMD5Table[4][16] =
+{
+	{
+		0xD76AA478UL, 0xE8C7B756UL, 0x242070DBUL, 0xC1BDCEEEUL,
+		0xF57C0FAFUL, 0x4787C62AUL, 0xA8304613UL, 0xFD469501UL,
+		0x698098D8UL, 0x8B44F7AFUL, 0xFFFF5BB1UL, 0x895CD7BEUL,
+		0x6B901122UL, 0xFD987193UL, 0xA679438EUL, 0x49B40821UL,
+	},
+	{
+		0xF61E2562UL, 0xC040B340UL, 0x265E5A51UL, 0xE9B6C7AAUL,
+		0xD62F105DUL, 0x02441453UL, 0xD8A1E681UL, 0xE7D3FBC8UL,
+		0x21E1CDE6UL, 0xC33707D6UL, 0xF4D50D87UL, 0x455A14EDUL,
+		0xA9E3E905UL, 0xFCEFA3F8UL, 0x676F02D9UL, 0x8D2A4C8AUL,
+	},
+	{
+		0xFFFA3942UL, 0x8771F681UL, 0x6D9D6122UL, 0xFDE5380CUL,
+		0xA4BEEA44UL, 0x4BDECFA9UL, 0xF6BB4B60UL, 0xBEBFBC70UL,
+		0x289B7EC6UL, 0xEAA127FAUL, 0xD4EF3085UL, 0x04881D05UL,
+		0xD9D4D039UL, 0xE6DB99E5UL, 0x1FA27CF8UL, 0xC4AC5665UL,
+	},
+	{
+		0xF4292244UL, 0x432AFF97UL, 0xAB9423A7UL, 0xFC93A039UL,
+		0x655B59C3UL, 0x8F0CCC92UL, 0xFFEFF47DUL, 0x85845DD1UL,
+		0x6FA87E4FUL, 0xFE2CE6E0UL, 0xA3014314UL, 0x4E0811A1UL,
+		0xF7537E82UL, 0xBD3AF235UL, 0x2AD7D2BBUL, 0xEB86D391UL,
+	},
+};
+
+const hlUInt lpMD5ShiftAmounts[4][16] =
+{
+	{ 7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22, },
+	{ 5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20, },
+	{ 4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23, },
+	{ 6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21, },
+};
+
+const hlByte lpMD5Padding[64] =
+{
+	0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+
+hlULong LeftRoate(hlULong value, hlUInt bits)
+{
+	return (value << bits) | (value >> (32 - bits));
+}
+
+hlVoid HLLib::MD5_Initialize(MD5Context& context)
+{
+	context.lpState[0] = 0x67452301UL;
+	context.lpState[1] = 0xEFCDAB89UL;
+	context.lpState[2] = 0x98BADCFEUL;
+	context.lpState[3] = 0x10325476UL;
+	context.uiLength = 0;
+}
+
+hlVoid HLLib::MD5_Update(MD5Context& context, const hlByte *lpBuffer, hlUInt uiBufferSize)
+{
+	hlULong uiBlockLength = context.uiLength % sizeof(context.lpBlock);
+	while(uiBlockLength + uiBufferSize >= sizeof(context.lpBlock))
+	{
+		hlULong uiCopyLength = std::min(static_cast<hlULong>(uiBufferSize), static_cast<hlULong>(sizeof(context.lpBlock) - uiBlockLength));
+		memcpy(reinterpret_cast<hlByte*>(context.lpBlock) + uiBlockLength, lpBuffer, uiCopyLength);
+		context.uiLength += uiCopyLength;
+
+		lpBuffer += uiCopyLength;
+		uiBufferSize -= uiCopyLength;
+
+		{
+			hlULong a = context.lpState[0];
+			hlULong b = context.lpState[1];
+			hlULong c = context.lpState[2];
+			hlULong d = context.lpState[3];
+
+			// Round 1.
+			for(hlULong i = 0; i < 16; ++i)
+			{
+				hlULong x = (b & c) | ((~b) & d);
+
+				hlULong t = d;
+				d = c;
+				c = b;
+				b += LeftRoate(a + x + lpMD5Table[0][i] + context.lpBlock[i], lpMD5ShiftAmounts[0][i]);
+				a = t;
+			}
+
+			// Round 2.
+			for(hlULong i = 0; i < 16; ++i)
+			{
+				hlULong x = (d & b) | (c & (~d));
+
+				hlULong t = d;
+				d = c;
+				c = b;
+				b += LeftRoate(a + x + lpMD5Table[1][i] + context.lpBlock[(5 * i + 1) % 16], lpMD5ShiftAmounts[1][i]);
+				a = t;
+			}
+
+			// Round 3.
+			for(hlULong i = 0; i < 16; ++i)
+			{
+				hlULong x = b ^ c ^ d;
+
+				hlULong t = d;
+				d = c;
+				c = b;
+				b += LeftRoate(a + x + lpMD5Table[2][i] + context.lpBlock[(3 * i + 5) % 16], lpMD5ShiftAmounts[2][i]);
+				a = t;
+			}
+
+			// Round 4.
+			for(hlULong i = 0; i < 16; ++i)
+			{
+				hlULong x = c ^ (b | (~d));
+
+				hlULong t = d;
+				d = c;
+				c = b;
+				b += LeftRoate(a + x + lpMD5Table[3][i] + context.lpBlock[(7 * i) % 16], lpMD5ShiftAmounts[3][i]);
+				a = t;
+			}
+
+			context.lpState[0] += a;
+			context.lpState[1] += b;
+			context.lpState[2] += c;
+			context.lpState[3] += d;
+		}
+
+		uiBlockLength = 0;
+	}
+
+	memcpy(reinterpret_cast<hlByte*>(context.lpBlock) + uiBlockLength, lpBuffer, uiBufferSize);
+	context.uiLength += uiBufferSize;
+}
+
+hlVoid HLLib::MD5_Finalize(MD5Context& context, hlByte (&lpDigest)[16])
+{
+	hlULongLong uiLengthInBits = 8ULL * static_cast<hlULongLong>(context.uiLength);
+
+	hlULong uiBlockLength = context.uiLength % sizeof(context.lpBlock);
+	if(uiBlockLength < sizeof(context.lpBlock) - sizeof(hlULongLong))
+	{
+		MD5_Update(context, lpMD5Padding, sizeof(context.lpBlock) - sizeof(uiLengthInBits) - uiBlockLength);
+	}
+	else
+	{
+		MD5_Update(context, lpMD5Padding, 2 * sizeof(context.lpBlock) - sizeof(uiLengthInBits) - uiBlockLength);
+	}
+
+	MD5_Update(context, reinterpret_cast<hlByte*>(&uiLengthInBits), sizeof(uiLengthInBits));
+
+	memcpy(lpDigest, context.lpState, sizeof(lpDigest));
 }

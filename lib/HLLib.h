@@ -1,6 +1,6 @@
 /*
  * HLLib
- * Copyright (C) 2006-2012 Ryan Gregg
+ * Copyright (C) 2006-2013 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -65,8 +65,8 @@ typedef hlSingle		hlFloat;
 #define hlFalse			0
 #define hlTrue			1
 
-#define HL_VERSION_NUMBER	((2 << 24) | (4 << 16) | (3 << 8) | 0)
-#define HL_VERSION_STRING	"2.4.3"
+#define HL_VERSION_NUMBER	((2 << 24) | (4 << 16) | (4 << 8) | 0)
+#define HL_VERSION_STRING	"2.4.4"
 
 #define HL_ID_INVALID 0xffffffff
 
@@ -580,6 +580,9 @@ HLLIB_API hlBool hlWADFileGetImageData(const HLDirectoryItem *pFile, hlUInt *uiW
 #endif
 
 #ifdef __cplusplus
+
+#	include <list>
+
 namespace HLLib
 {
 	class HLLIB_API CDirectoryItem;
@@ -2211,6 +2214,15 @@ namespace HLLib
 			hlUInt uiDirectoryLength;
 		};
 
+		// Added in version 2.
+		struct VPKExtendedHeader
+		{
+			hlUInt uiDummy0;
+			hlUInt uiArchiveHashLength;
+			hlUInt uiExtraLength;		// Looks like some more MD5 hashes.
+			hlUInt uiDummy1;
+		};
+
 		struct VPKDirectoryEntry
 		{
 			hlUInt uiCRC;
@@ -2219,6 +2231,15 @@ namespace HLLib
 			hlUInt uiEntryOffset;
 			hlUInt uiEntryLength;
 			hlUShort uiDummy0;			// Always 0xffff.
+		};
+
+		// Added in version 2.
+		struct VPKArchiveHash
+		{
+			hlUInt uiArchiveIndex;
+			hlUInt uiArchiveOffset;
+			hlUInt uiLength;
+			hlByte lpHash[16];			// MD5
 		};
 
 		#pragma pack()
@@ -2242,7 +2263,10 @@ namespace HLLib
 			const hlVoid *lpPreloadData;
 		};
 
+		typedef std::list<VPKDirectoryItem *> CDirectoryItemList;
+
 	private:
+		static const char *lpAttributeNames[];
 		static const char *lpItemAttributeNames[];
 
 		Mapping::CView *pView;
@@ -2251,7 +2275,9 @@ namespace HLLib
 		VPKArchive *lpArchives;
 
 		const VPKHeader *pHeader;
-		class CDirectoryItemList *pDirectoryItems;
+		const VPKExtendedHeader *pExtendedHeader;
+		const VPKArchiveHash *lpArchiveHashes;
+		CDirectoryItemList *pDirectoryItems;
 
 	public:
 		CVPKFile();

@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("HLExtract.Net")]
-[assembly: AssemblyCopyright("Copyright (C) 2008-2012 Ryan Gregg")]
+[assembly: AssemblyCopyright("Copyright (C) 2008-2013 Ryan Gregg")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("2.4.3.0")]
-[assembly: AssemblyFileVersion("2.4.3.0")]
+[assembly: AssemblyVersion("2.4.4.0")]
+[assembly: AssemblyFileVersion("2.4.4.0")]
