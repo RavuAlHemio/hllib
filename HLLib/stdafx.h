@@ -1,6 +1,6 @@
 /*
  * HLLib
- * Copyright (C) 2006-2012 Ryan Gregg
+ * Copyright (C) 2006-2013 Ryan Gregg
 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -65,8 +65,8 @@ typedef hlSingle		hlFloat;
 #define hlFalse			0
 #define hlTrue			1
 
-#define HL_VERSION_NUMBER	((2 << 24) | (4 << 16) | (3 << 8) | 0)
-#define HL_VERSION_STRING	"2.4.3"
+#define HL_VERSION_NUMBER	((2 << 24) | (4 << 16) | (4 << 8) | 0)
+#define HL_VERSION_STRING	"2.4.4"
 
 #define HL_ID_INVALID 0xffffffff
 
@@ -375,6 +375,8 @@ typedef hlVoid (*PDefragmentProgressExProc) (const HLDirectoryItem *pFile, hlUIn
 }
 #endif
 
+#define NOMINMAX
+
 #if _MSC_VER
 #	define _CRT_SECURE_NO_WARNINGS
 #	define _CRT_NONSTDC_NO_DEPRECATE
@@ -444,6 +446,7 @@ typedef hlVoid (*PDefragmentProgressExProc) (const HLDirectoryItem *pFile, hlUIn
 #include <string.h>
 #include <time.h>
 
+#include <algorithm>
 #include <list>
 #include <vector>
 

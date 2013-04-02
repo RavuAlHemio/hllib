@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,4,3,0
- PRODUCTVERSION 2,4,3,0
+ FILEVERSION 2,4,4,0
+ PRODUCTVERSION 2,4,4,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -69,12 +69,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Half-Life Package Library"
             VALUE "FileDescription", "HLLib Dynamic Link Library"
-            VALUE "FileVersion", "2.4.3"
+            VALUE "FileVersion", "2.4.4"
             VALUE "InternalName", "HLLib"
-            VALUE "LegalCopyright", "Copyright (C) 2006-2012 Ryan Gregg"
+            VALUE "LegalCopyright", "Copyright (C) 2006-2013 Ryan Gregg"
             VALUE "OriginalFilename", "HLLib.dll"
             VALUE "ProductName", " HLLib Dynamic Link Library"
-            VALUE "ProductVersion", "2.4.3"
+            VALUE "ProductVersion", "2.4.4"
         END
     END
     BLOCK "VarFileInfo"
