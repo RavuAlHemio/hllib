@@ -53,6 +53,7 @@
 #	define UNUSED
 #	include <windows.h>
 #else
+#	include <unistd.h>
 #	include <linux/limits.h>
 #	define MAX_PATH PATH_MAX
 #	define UNUSED __attribute__((__unused__))
@@ -575,7 +576,15 @@ hlVoid SetColor(hlUInt16 uiColor)
 
 	SetConsoleTextAttribute(Handle, uiColor);
 #else
-	hlUInt16 uiColorPart = (uiColor & (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE));
+	hlUInt16 uiColorPart;
+
+	if (!isatty(fileno(stdout)))
+	{
+		// cowardly refuse to write colors into things that aren't terminals
+		return;
+	}
+
+	uiColorPart = (uiColor & (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE));
 
 	if (uiColorPart == 0)
 	{
