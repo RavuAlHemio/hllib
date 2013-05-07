@@ -206,6 +206,10 @@ hlUInt HLLib::WStringToString(const hlWChar *lpSource, hlChar* lpDest, hlUInt ui
 			uiDestSize--;
 			uiCharsWritten++;
 		}
+		else
+		{
+			return 0;
+		}
 	}
 	if(uiDestSize > 0)
 	{
