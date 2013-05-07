@@ -627,10 +627,10 @@ hlVoid PrintUsage()
 	printf("HLExtract.exe -p \"C:\\half-life.gcf\" -lf \"C:\\half-life.txt\" -m -s\n");
 	printf("HLExtract.exe -p \"C:\\half-life.gcf\" -m -f\n");
 #else
-	printf("HLExtract.exe -p \"~/half-life.gcf\" -d \"~/backup\" -e \"root/valve/models\" -e \"root/valve/config.cfg\"\n");
-	printf("HLExtract.exe -p \"~/half-life.gcf\" -c -m -v\n");
-	printf("HLExtract.exe -p \"~/half-life.gcf\" -lf \"~/half-life.txt\" -m -s\n");
-	printf("HLExtract.exe -p \"~/half-life.gcf\" -m -f\n");
+	printf("hlextract -p ~/half-life.gcf -d ~/backup -e \"root/valve/models\" -e \"root/valve/config.cfg\"\n");
+	printf("hlextract -p ~/half-life.gcf -c -m -v\n");
+	printf("hlextract -p ~/half-life.gcf -lf ~/half-life.txt -m -s\n");
+	printf("hlextract -p ~/half-life.gcf -m -f\n");
 #endif
 }
 
