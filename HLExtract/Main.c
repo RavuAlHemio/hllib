@@ -57,9 +57,9 @@
 #	define MAX_PATH PATH_MAX
 #	define UNUSED __attribute__((__unused__))
 
-#	define FOREGROUND_BLUE      0x0001
+#	define FOREGROUND_RED       0x0001
 #	define FOREGROUND_GREEN     0x0002
-#	define FOREGROUND_RED       0x0004
+#	define FOREGROUND_BLUE      0x0004
 #	define FOREGROUND_INTENSITY 0x0008
 
 #	define stricmp strcasecmp
@@ -89,6 +89,7 @@ static hlChar lpDestination[MAX_PATH] = "";
 static hlBool bSilent = hlFalse;
 #ifndef _WIN32
 	static hlUInt uiProgressLast = 0;
+	static hlUInt16 uiCurrentColor = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
 #endif
 
 int main(hlInt argc, hlChar* argv[])
@@ -556,9 +557,11 @@ hlUInt16 GetColor()
 			return Info.wAttributes;
 		}
     }
-#endif
 
 	return FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED;
+#else
+	return uiCurrentColor;
+#endif
 }
 
 hlVoid SetColor(hlUInt16 uiColor)
@@ -572,7 +575,35 @@ hlVoid SetColor(hlUInt16 uiColor)
 
 	SetConsoleTextAttribute(Handle, uiColor);
 #else
-	(void)uiColor;
+	hlUInt16 uiColorPart = (uiColor & (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE));
+
+	if (uiColorPart == 0)
+	{
+		// cowardly refuse to switch to black
+		return;
+	}
+
+	// start with "reset" attribute
+	printf("\033[0");
+
+	// handle white as the default case
+	if (uiColorPart != (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE))
+	{
+		printf(";3%d", uiColorPart);
+	}
+
+	// activate intensity if wanted
+	if ((uiColor & FOREGROUND_INTENSITY) != 0)
+	{
+		printf(";1");
+	}
+
+	// finish
+	printf("m");
+	fflush(stdout);
+
+	// store for next time
+	uiCurrentColor = uiColor;
 #endif
 }
 
