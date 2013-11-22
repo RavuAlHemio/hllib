@@ -27,7 +27,8 @@ using namespace HLLib;
 #define HL_SGA_CHECKSUM_LENGTH 0x00008000
 
 const char *CSGAFile::lpAttributeNames[] = { "Major Version", "Minor Version", "File MD5", "Name", "Header MD5" };
-const char *CSGAFile::lpItemAttributeNames[] = { "Section Alias", "Section Name", "Modified", "Type", "CRC" };
+const char *CSGAFile::lpItemAttributeNames[] = { "Section Alias", "Section Name", "Modified", "Type", "CRC", "Verification" };
+const char *CSGAFile::lpVerificationNames[] = { "None", "CRC", "CRC Blocks", "MD5 Blocks", "SHA1 Blocks" };
 
 CSGAFile::CSGAFile() : CPackage(), pHeaderView(0), pHeader(0), pDirectory(0)
 {
@@ -56,17 +57,18 @@ const hlChar *CSGAFile::GetDescription() const
 
 hlBool CSGAFile::MapDataStructures()
 {
-	if(sizeof(SGAHeader) > this->pMapping->GetMappingSize())
+	hlULongLong uiMaxHeaderSize = std::max(sizeof(SGAHeader4), sizeof(SGAHeader6));
+	if(uiMaxHeaderSize > this->pMapping->GetMappingSize())
 	{
 		LastError.SetErrorMessage("Invalid file: the file map is too small for it's header.");
 		return hlFalse;
 	}
 
-	if(!this->pMapping->Map(this->pHeaderView, 0, sizeof(SGAHeader)))
+	if(!this->pMapping->Map(this->pHeaderView, 0, uiMaxHeaderSize))
 	{
 		return hlFalse;
 	}
-	this->pHeader = static_cast<const SGAHeader *>(this->pHeaderView->GetView());
+	this->pHeader = static_cast<const SGAHeaderBase *>(this->pHeaderView->GetView());
 
 	if(memcmp(this->pHeader->lpSignature, "_ARCHIVE", 8) != 0)
 	{
@@ -74,25 +76,52 @@ hlBool CSGAFile::MapDataStructures()
 		return hlFalse;
 	}
 
-	if((this->pHeader->uiMajorVersion != 4 || this->pHeader->uiMinorVersion != 0) && (this->pHeader->uiMajorVersion != 5 || this->pHeader->uiMinorVersion != 0))
+	if((this->pHeader->uiMajorVersion != 4 || this->pHeader->uiMinorVersion != 0) &&
+		(this->pHeader->uiMajorVersion != 5 || this->pHeader->uiMinorVersion != 0) &&
+		(this->pHeader->uiMajorVersion != 6 || this->pHeader->uiMinorVersion != 0) &&
+		(this->pHeader->uiMajorVersion != 7 || this->pHeader->uiMinorVersion != 0))
 	{
 		LastError.SetErrorMessageFormated("Invalid SGA version (v%hu.%hu): you have a version of a SGA file that HLLib does not know how to read. Check for product updates.", this->pHeader->uiMajorVersion, this->pHeader->uiMinorVersion);
-		return hlFalse;
-	}
-
-	if(this->pHeader->uiHeaderLength > this->pMapping->GetMappingSize())
-	{
-		LastError.SetErrorMessage("Invalid file: the file map is too small for it's extended header.");
 		return hlFalse;
 	}
 
 	switch(this->pHeader->uiMajorVersion)
 	{
 	case 4:
+		if(static_cast<const CSGADirectory4::SGAHeader*>(this->pHeader)->uiHeaderLength > this->pMapping->GetMappingSize())
+		{
+			LastError.SetErrorMessage("Invalid file: the file map is too small for it's extended header.");
+			return hlFalse;
+		}
+
 		this->pDirectory = new CSGADirectory4(*this);
 		break;
 	case 5:
+		if(static_cast<const CSGADirectory5::SGAHeader*>(this->pHeader)->uiHeaderLength > this->pMapping->GetMappingSize())
+		{
+			LastError.SetErrorMessage("Invalid file: the file map is too small for it's extended header.");
+			return hlFalse;
+		}
+
 		this->pDirectory = new CSGADirectory5(*this);
+		break;
+	case 6:
+		if(static_cast<const CSGADirectory6::SGAHeader*>(this->pHeader)->uiHeaderLength > this->pMapping->GetMappingSize())
+		{
+			LastError.SetErrorMessage("Invalid file: the file map is too small for it's extended header.");
+			return hlFalse;
+		}
+
+		this->pDirectory = new CSGADirectory6(*this);
+		break;
+	case 7:
+		if(static_cast<const CSGADirectory7::SGAHeader*>(this->pHeader)->uiHeaderLength > this->pMapping->GetMappingSize())
+		{
+			LastError.SetErrorMessage("Invalid file: the file map is too small for it's extended header.");
+			return hlFalse;
+		}
+
+		this->pDirectory = new CSGADirectory7(*this);
 		break;
 	default:
 		assert(false);
@@ -185,17 +214,35 @@ hlBool CSGAFile::GetAttributeInternal(HLPackageAttribute eAttribute, HLAttribute
 		hlAttributeSetUnsignedInteger(&Attribute, this->lpAttributeNames[eAttribute], this->pHeader->uiMinorVersion, hlFalse);
 		return hlTrue;
 	case HL_SGA_PACKAGE_MD5_FILE:
-		BufferToHexString(this->pHeader->lpFileMD5, 16, lpBuffer, sizeof(lpBuffer));
-		hlAttributeSetString(&Attribute, this->lpAttributeNames[eAttribute], lpBuffer);
-		return hlTrue;
+		if(this->pHeader->uiMajorVersion >= 4 && this->pHeader->uiMajorVersion <= 5)
+		{
+			BufferToHexString(static_cast<const SGAHeader4 *>(this->pHeader)->lpFileMD5, 16, lpBuffer, sizeof(lpBuffer));
+			hlAttributeSetString(&Attribute, this->lpAttributeNames[eAttribute], lpBuffer);
+			return hlTrue;
+		}
+		return hlFalse;
 	case HL_SGA_PACKAGE_NAME:
-		WStringToString(this->pHeader->lpName, lpBuffer, sizeof(lpBuffer));
-		hlAttributeSetString(&Attribute, this->lpAttributeNames[eAttribute], lpBuffer);
-		return hlTrue;
+		if(this->pHeader->uiMajorVersion >= 4 && this->pHeader->uiMajorVersion <= 5)
+		{
+			WStringToString(static_cast<const SGAHeader4 *>(this->pHeader)->lpName, lpBuffer, sizeof(lpBuffer));
+			hlAttributeSetString(&Attribute, this->lpAttributeNames[eAttribute], lpBuffer);
+			return hlTrue;
+		}
+		if(this->pHeader->uiMajorVersion >= 6 && this->pHeader->uiMajorVersion <= 6)
+		{
+			WStringToString(static_cast<const SGAHeader6 *>(this->pHeader)->lpName, lpBuffer, sizeof(lpBuffer));
+			hlAttributeSetString(&Attribute, this->lpAttributeNames[eAttribute], lpBuffer);
+			return hlTrue;
+		}
+		return hlFalse;
 	case HL_SGA_PACKAGE_MD5_HEADER:
-		BufferToHexString(this->pHeader->lpHeaderMD5, 16, lpBuffer, sizeof(lpBuffer));
-		hlAttributeSetString(&Attribute, this->lpAttributeNames[eAttribute], lpBuffer);
-		return hlTrue;
+		if(this->pHeader->uiMajorVersion >= 4 && this->pHeader->uiMajorVersion <= 5)
+		{
+			BufferToHexString(static_cast<const SGAHeader4 *>(this->pHeader)->lpHeaderMD5, 16, lpBuffer, sizeof(lpBuffer));
+			hlAttributeSetString(&Attribute, this->lpAttributeNames[eAttribute], lpBuffer);
+			return hlTrue;
+		}
+		return hlFalse;
 	default:
 		return hlFalse;
 	}
@@ -221,59 +268,77 @@ CSGAFile::ISGADirectory::~ISGADirectory()
 
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::CSGADirectory(CSGAFile& File) : File(File), pHeaderDirectoryView(0), pDirectoryHeader(0), lpSections(0), lpFolders(0), lpFiles(0), lpStringTable(0)
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+CSGAFile::CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::CSGASpecializedDirectory(CSGAFile& File) : File(File), pHeaderDirectoryView(0), pDirectoryHeader(0), lpSections(0), lpFolders(0), lpFiles(0), lpStringTable(0)
 {
 
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::~CSGADirectory()
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder>
+CSGAFile::CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, CSGAFile::SGAFile4>::CSGASpecializedDirectory(CSGAFile& File) : File(File), pHeaderDirectoryView(0), pDirectoryHeader(0), lpSections(0), lpFolders(0), lpFiles(0), lpStringTable(0)
+{
+
+}
+
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder>
+CSGAFile::CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, CSGAFile::SGAFile6>::CSGASpecializedDirectory(CSGAFile& File) : File(File), pHeaderDirectoryView(0), pDirectoryHeader(0), lpSections(0), lpFolders(0), lpFiles(0), lpStringTable(0)
+{
+
+}
+
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::CSGADirectory(CSGAFile& File) : CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>(File)
+{
+
+}
+
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::~CSGADirectory()
 {
 	this->UnmapDataStructures();
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::MapDataStructures()
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+hlBool CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::MapDataStructures()
 {
-	if(!this->File.pMapping->Map(this->pHeaderDirectoryView, sizeof(SGAHeader), this->File.pHeader->uiHeaderLength))
+	if(!this->File.pMapping->Map(this->pHeaderDirectoryView, sizeof(SGAHeader), static_cast<const SGAHeader *>(this->File.pHeader)->uiHeaderLength))
 	{
 		return hlFalse;
 	}
 
-	this->pDirectoryHeader = static_cast<const TSGADirectoryHeader *>(this->pHeaderDirectoryView->GetView());
+	this->pDirectoryHeader = static_cast<const SGADirectoryHeader *>(this->pHeaderDirectoryView->GetView());
 
-	if(this->pDirectoryHeader->uiSectionCount > 0 && this->pDirectoryHeader->uiSectionOffset + sizeof(TSGASection) * this->pDirectoryHeader->uiSectionCount > this->File.pHeader->uiHeaderLength)
+	if(this->pDirectoryHeader->uiSectionCount > 0 && this->pDirectoryHeader->uiSectionOffset + sizeof(SGASection) * this->pDirectoryHeader->uiSectionCount > static_cast<const SGAHeader *>(this->File.pHeader)->uiHeaderLength)
 	{
 		LastError.SetErrorMessage("Invalid file: the file map is too small for section data.");
 		return hlFalse;
 	}
-	if(this->pDirectoryHeader->uiFolderCount > 0 && this->pDirectoryHeader->uiFolderOffset + sizeof(TSGAFolder) * this->pDirectoryHeader->uiFolderCount > this->File.pHeader->uiHeaderLength)
+	if(this->pDirectoryHeader->uiFolderCount > 0 && this->pDirectoryHeader->uiFolderOffset + sizeof(SGAFolder) * this->pDirectoryHeader->uiFolderCount > static_cast<const SGAHeader *>(this->File.pHeader)->uiHeaderLength)
 	{
 		LastError.SetErrorMessage("Invalid file: the file map is too small for folder data.");
 		return hlFalse;
 	}
-	if(this->pDirectoryHeader->uiFileCount > 0 && this->pDirectoryHeader->uiFileOffset + sizeof(TSGAFile) * this->pDirectoryHeader->uiFileCount > this->File.pHeader->uiHeaderLength)
+	if(this->pDirectoryHeader->uiFileCount > 0 && this->pDirectoryHeader->uiFileOffset + sizeof(SGAFile) * this->pDirectoryHeader->uiFileCount > static_cast<const SGAHeader *>(this->File.pHeader)->uiHeaderLength)
 	{
 		LastError.SetErrorMessage("Invalid file: the file map is too small for file data.");
 		return hlFalse;
 	}
-	if(this->pDirectoryHeader->uiStringTableOffset > this->File.pHeader->uiHeaderLength)
+	if(this->pDirectoryHeader->uiStringTableOffset > static_cast<const SGAHeader *>(this->File.pHeader)->uiHeaderLength)
 	{
 		LastError.SetErrorMessage("Invalid file: the file map is too small for string table data.");
 		return hlFalse;
 	}
 
-	this->lpSections = reinterpret_cast<const TSGASection *>(reinterpret_cast<const hlByte *>(this->pDirectoryHeader) + this->pDirectoryHeader->uiSectionOffset);
-	this->lpFolders = reinterpret_cast<const TSGAFolder *>(reinterpret_cast<const hlByte *>(this->pDirectoryHeader) + this->pDirectoryHeader->uiFolderOffset);
-	this->lpFiles = reinterpret_cast<const TSGAFile *>(reinterpret_cast<const hlByte *>(this->pDirectoryHeader) + this->pDirectoryHeader->uiFileOffset);
+	this->lpSections = reinterpret_cast<const SGASection *>(reinterpret_cast<const hlByte *>(this->pDirectoryHeader) + this->pDirectoryHeader->uiSectionOffset);
+	this->lpFolders = reinterpret_cast<const SGAFolder *>(reinterpret_cast<const hlByte *>(this->pDirectoryHeader) + this->pDirectoryHeader->uiFolderOffset);
+	this->lpFiles = reinterpret_cast<const SGAFile *>(reinterpret_cast<const hlByte *>(this->pDirectoryHeader) + this->pDirectoryHeader->uiFileOffset);
 	this->lpStringTable = reinterpret_cast<const hlChar *>(reinterpret_cast<const hlByte *>(this->pDirectoryHeader) + this->pDirectoryHeader->uiStringTableOffset);
 
 	return hlTrue;
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-hlVoid CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::UnmapDataStructures()
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+hlVoid CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::UnmapDataStructures()
 {
 	this->pDirectoryHeader = 0;
 	this->lpSections = 0;
@@ -284,8 +349,8 @@ hlVoid CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSG
 	this->File.pMapping->Unmap(this->pHeaderDirectoryView);
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-CDirectoryFolder *CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::CreateRoot()
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+CDirectoryFolder *CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::CreateRoot()
 {
 	CDirectoryFolder *pRoot = new CDirectoryFolder(&File);
 
@@ -310,8 +375,8 @@ CDirectoryFolder *CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGA
 	return pRoot;
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-hlVoid CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::CreateFolder(CDirectoryFolder *pParent, hlUInt uiFolderIndex)
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+hlVoid CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::CreateFolder(CDirectoryFolder *pParent, hlUInt uiFolderIndex)
 {
 	const hlChar* lpName = this->lpStringTable + this->lpFolders[uiFolderIndex].uiNameOffset;
 	if(*lpName != '\0')
@@ -351,8 +416,108 @@ hlVoid CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSG
 	}
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackageAttribute eAttribute, HLAttribute &Attribute) const
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder>
+hlBool CSGAFile::CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, CSGAFile::SGAFile4>::GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackageAttribute eAttribute, HLAttribute &Attribute) const
+{
+	if(pItem->GetID() != HL_ID_INVALID)
+	{
+		switch(pItem->GetType())
+		{
+			case HL_ITEM_FILE:
+			{
+				const CDirectoryFile *pFile = static_cast<const CDirectoryFile *>(pItem);
+				const SGAFile &File = this->lpFiles[pFile->GetID()];
+				switch(eAttribute)
+				{
+					case HL_SGA_ITEM_CRC:
+					{
+						Mapping::CView *pFileHeaderView = 0;
+						if(this->File.pMapping->Map(pFileHeaderView, static_cast<const SGAHeader *>(this->File.pHeader)->uiFileDataOffset + File.uiOffset - sizeof(SGAFileHeader), sizeof(SGAFileHeader)))
+						{
+							const SGAFileHeader* pFileHeader = static_cast<const SGAFileHeader *>(pFileHeaderView->GetView());
+							hlAttributeSetUnsignedInteger(&Attribute, CSGAFile::lpItemAttributeNames[eAttribute], pFileHeader->uiCRC32, hlTrue);
+							this->File.pMapping->Unmap(pFileHeaderView);
+							return hlTrue;
+						}
+						return hlFalse;
+					}
+					case HL_SGA_ITEM_VERIFICATION:
+					{
+						hlAttributeSetString(&Attribute, CSGAFile::lpItemAttributeNames[eAttribute], CSGAFile::lpVerificationNames[CSGAFile::VERIFICATION_CRC]);
+						return hlTrue;
+					}
+				}
+				break;
+			}
+		}
+	}
+	return hlFalse;
+}
+
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder>
+hlBool CSGAFile::CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, CSGAFile::SGAFile6>::GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackageAttribute eAttribute, HLAttribute &Attribute) const
+{
+	if(pItem->GetID() != HL_ID_INVALID)
+	{
+		switch(pItem->GetType())
+		{
+			case HL_ITEM_FILE:
+			{
+				const CDirectoryFile *pFile = static_cast<const CDirectoryFile *>(pItem);
+				const SGAFile &File = this->lpFiles[pFile->GetID()];
+				switch(eAttribute)
+				{
+					case HL_SGA_ITEM_CRC:
+					{
+						hlAttributeSetUnsignedInteger(&Attribute, CSGAFile::lpItemAttributeNames[eAttribute], File.uiCRC32, hlTrue);
+						return hlTrue;
+					}
+					case HL_SGA_ITEM_VERIFICATION:
+					{
+						hlAttributeSetString(&Attribute, CSGAFile::lpItemAttributeNames[eAttribute], CSGAFile::lpVerificationNames[CSGAFile::VERIFICATION_CRC]);
+						return hlTrue;
+					}
+				}
+				break;
+			}
+		}
+	}
+	return hlFalse;
+}
+
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+hlBool CSGAFile::CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackageAttribute eAttribute, HLAttribute &Attribute) const
+{
+	if(pItem->GetID() != HL_ID_INVALID)
+	{
+		switch(pItem->GetType())
+		{
+			case HL_ITEM_FILE:
+			{
+				const CDirectoryFile *pFile = static_cast<const CDirectoryFile *>(pItem);
+				const SGAFile &File = this->lpFiles[pFile->GetID()];
+				switch(eAttribute)
+				{
+					case HL_SGA_ITEM_CRC:
+					{
+						hlAttributeSetUnsignedInteger(&Attribute, CSGAFile::lpItemAttributeNames[eAttribute], File.uiCRC32, hlTrue);
+						return hlTrue;
+					}
+					case HL_SGA_ITEM_VERIFICATION:
+					{
+						hlAttributeSetString(&Attribute, CSGAFile::lpItemAttributeNames[eAttribute], CSGAFile::lpVerificationNames[File.uiDummy0 < CSGAFile::VERIFICATION_COUNT ? File.uiDummy0 : CSGAFile::VERIFICATION_NONE]);
+						return hlTrue;
+					}
+				}
+				break;
+			}
+		}
+	}
+	return hlFalse;
+}
+
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+hlBool CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackageAttribute eAttribute, HLAttribute &Attribute) const
 {
 	if(pItem->GetID() != HL_ID_INVALID)
 	{
@@ -393,7 +558,7 @@ hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSG
 			case HL_ITEM_FILE:
 			{
 				const CDirectoryFile *pFile = static_cast<const CDirectoryFile *>(pItem);
-				const TSGAFile &File = this->lpFiles[pFile->GetID()];
+				const SGAFile &File = this->lpFiles[pFile->GetID()];
 				switch(eAttribute)
 				{
 					case HL_SGA_ITEM_SECTION_ALIAS:
@@ -436,31 +601,19 @@ hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSG
 						hlAttributeSetUnsignedInteger(&Attribute, CSGAFile::lpItemAttributeNames[eAttribute], File.uiType, hlFalse);
 						return hlTrue;
 					}
-					case HL_SGA_ITEM_CRC:
-					{
-						Mapping::CView *pFileHeaderView = 0;
-						if(this->File.pMapping->Map(pFileHeaderView, this->File.pHeader->uiFileDataOffset + File.uiOffset - sizeof(TSGAFileHeader), sizeof(TSGAFileHeader)))
-						{
-							const TSGAFileHeader* pFileHeader = static_cast<const TSGAFileHeader *>(pFileHeaderView->GetView());
-							hlAttributeSetUnsignedInteger(&Attribute, CSGAFile::lpItemAttributeNames[eAttribute], pFileHeader->uiCRC32, hlTrue);
-							this->File.pMapping->Unmap(pFileHeaderView);
-							return hlTrue;
-						}
-						return hlFalse;
-					}
 				}
 				break;
 			}
 		}
 	}
-	return hlFalse;
+	return CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::GetItemAttributeInternal(pItem, eAttribute, Attribute);
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::GetFileExtractableInternal(const CDirectoryFile *pFile, hlBool &bExtractable) const
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+hlBool CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::GetFileExtractableInternal(const CDirectoryFile *pFile, hlBool &bExtractable) const
 {
 #if !USE_ZLIB
-	const TSGAFile &File = this->lpFiles[pFile->GetID()];
+	const SGAFile &File = this->lpFiles[pFile->GetID()];
 
 	bExtractable = File.uiType == 0;
 #else
@@ -470,10 +623,10 @@ hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSG
 	return hlTrue;
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::GetFileValidationInternal(const CDirectoryFile *pFile, HLValidation &eValidation) const
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder>
+hlBool CSGAFile::CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, CSGAFile::SGAFile4>::GetFileValidationInternal(const CDirectoryFile *pFile, HLValidation &eValidation) const
 {
-	const TSGAFile &File = this->lpFiles[pFile->GetID()];
+	const SGAFile &File = this->lpFiles[pFile->GetID()];
 
 #if !USE_ZLIB
 	if(File.uiType != 0)
@@ -484,11 +637,11 @@ hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSG
 #endif
 
 	Mapping::CView *pFileHeaderDataView = 0;
-	if(this->File.pMapping->Map(pFileHeaderDataView, this->File.pHeader->uiFileDataOffset + File.uiOffset - sizeof(TSGAFileHeader), File.uiSizeOnDisk + sizeof(TSGAFileHeader)))
+	if(this->File.pMapping->Map(pFileHeaderDataView, static_cast<const SGAHeader *>(this->File.pHeader)->uiFileDataOffset + File.uiOffset - sizeof(SGAFileHeader), File.uiSizeOnDisk + sizeof(SGAFileHeader)))
 	{
 		hlULong uiChecksum = 0;
-		const TSGAFileHeader* pFileHeader = static_cast<const TSGAFileHeader*>(pFileHeaderDataView->GetView());
-		const hlByte* lpBuffer = reinterpret_cast<const hlByte *>(pFileHeader) + sizeof(TSGAFileHeader);
+		const SGAFileHeader* pFileHeader = static_cast<const SGAFileHeader*>(pFileHeaderDataView->GetView());
+		const hlByte* lpBuffer = reinterpret_cast<const hlByte *>(pFileHeader) + sizeof(SGAFileHeader);
 #if USE_ZLIB
 		hlByte *lpInflateBuffer = 0;
 		if(File.uiType != 0)
@@ -535,7 +688,10 @@ hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSG
 #if USE_ZLIB
 		delete []lpInflateBuffer;
 #endif
-		eValidation = static_cast<hlULong>(pFileHeader->uiCRC32) == uiChecksum ? HL_VALIDATES_OK : HL_VALIDATES_CORRUPT;
+		if(eValidation == HL_VALIDATES_ASSUMED_OK)
+		{
+			eValidation = static_cast<hlULong>(pFileHeader->uiCRC32) == uiChecksum ? HL_VALIDATES_OK : HL_VALIDATES_CORRUPT;
+		}
 
 		this->File.pMapping->Unmap(pFileHeaderDataView);
 	}
@@ -547,41 +703,166 @@ hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSG
 	return hlTrue;
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::GetFileSizeInternal(const CDirectoryFile *pFile, hlUInt &uiSize) const
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder>
+hlBool CSGAFile::CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, CSGAFile::SGAFile6>::GetFileValidationInternal(const CDirectoryFile *pFile, HLValidation &eValidation) const
 {
-	const TSGAFile &File = this->lpFiles[pFile->GetID()];
+	const SGAFile &File = this->lpFiles[pFile->GetID()];
+
+	Mapping::CView *pFileHeaderDataView = 0;
+	if(this->File.pMapping->Map(pFileHeaderDataView, static_cast<const SGAHeader *>(this->File.pHeader)->uiFileDataOffset + File.uiOffset, File.uiSizeOnDisk))
+	{
+		hlULong uiChecksum = 0;
+		const hlByte* lpBuffer = reinterpret_cast<const hlByte *>(pFileHeaderDataView->GetView());
+		hlULongLong uiTotalBytes = 0, uiFileBytes = File.uiSizeOnDisk;
+
+		hlBool bCancel = hlFalse;
+		hlValidateFileProgress(const_cast<CDirectoryFile *>(pFile), uiTotalBytes, uiFileBytes, &bCancel);
+
+		while(uiTotalBytes < uiFileBytes)
+		{
+			if(bCancel)
+			{
+				eValidation = HL_VALIDATES_CANCELED;
+				break;
+			}
+
+			hlUInt uiBufferSize = static_cast<hlUInt>(uiTotalBytes + HL_SGA_CHECKSUM_LENGTH <= uiFileBytes ? HL_SGA_CHECKSUM_LENGTH : uiFileBytes - uiTotalBytes);
+			uiChecksum = CRC32(lpBuffer, uiBufferSize, uiChecksum);
+
+			lpBuffer += uiBufferSize;
+			uiTotalBytes += static_cast<hlULongLong>(uiBufferSize);
+
+			hlValidateFileProgress(const_cast<CDirectoryFile *>(pFile), uiTotalBytes, uiFileBytes, &bCancel);
+		}
+		if(eValidation == HL_VALIDATES_ASSUMED_OK)
+		{
+			eValidation = static_cast<hlULong>(File.uiCRC32) == uiChecksum ? HL_VALIDATES_OK : HL_VALIDATES_CORRUPT;
+		}
+
+		this->File.pMapping->Unmap(pFileHeaderDataView);
+	}
+	else
+	{
+		eValidation = HL_VALIDATES_ERROR;
+	}
+
+	return hlTrue;
+}
+
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+hlBool CSGAFile::CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::GetFileValidationInternal(const CDirectoryFile *pFile, HLValidation &eValidation) const
+{
+	const SGAFile &File = this->lpFiles[pFile->GetID()];
+
+	Mapping::CView *pFileHeaderDataView = 0;
+	if(this->File.pMapping->Map(pFileHeaderDataView, static_cast<const SGAHeader *>(this->File.pHeader)->uiFileDataOffset + File.uiOffset, File.uiSizeOnDisk))
+	{
+		hlULong uiChecksum = 0;
+		const hlByte* lpBuffer = reinterpret_cast<const hlByte *>(pFileHeaderDataView->GetView());
+		hlULongLong uiTotalBytes = 0, uiFileBytes = File.uiSizeOnDisk;
+		hlULongLong uiBlockSize = this->pDirectoryHeader->uiBlockSize;
+		if(uiBlockSize == 0)
+		{
+			uiBlockSize = HL_SGA_CHECKSUM_LENGTH;
+		}
+
+		Checksum* checksum = 0;
+		switch(File.uiDummy0)
+		{
+		case CSGAFile::VERIFICATION_CRC_BLOCKS:
+			checksum = new CRC32Checksum();
+			break;
+		case CSGAFile::VERIFICATION_MD5_BLOCKS:
+			checksum = new MD5Checksum();
+			break;
+		case CSGAFile::VERIFICATION_SHA1_BLOCKS:
+			checksum = new SHA1Checksum();
+			break;
+		}
+		const hlByte *lpHashTable = reinterpret_cast<const hlByte *>(this->pDirectoryHeader) + this->pDirectoryHeader->uiHashTableOffset + File.uiHashOffset;
+
+		hlBool bCancel = hlFalse;
+		hlValidateFileProgress(const_cast<CDirectoryFile *>(pFile), uiTotalBytes, uiFileBytes, &bCancel);
+
+		while(uiTotalBytes < uiFileBytes)
+		{
+			if(bCancel)
+			{
+				eValidation = HL_VALIDATES_CANCELED;
+				break;
+			}
+
+			hlUInt uiBufferSize = static_cast<hlUInt>(uiTotalBytes + uiBlockSize <= uiFileBytes ? uiBlockSize : uiFileBytes - uiTotalBytes);
+			uiChecksum = CRC32(lpBuffer, uiBufferSize, uiChecksum);
+			if(checksum != 0)
+			{
+				checksum->Initialize();
+				checksum->Update(lpBuffer, uiBufferSize);
+				if(!checksum->Finalize(lpHashTable))
+				{
+					eValidation = HL_VALIDATES_CORRUPT;
+					break;
+				}
+				lpHashTable += checksum->GetDigestSize();
+			}
+
+			lpBuffer += uiBufferSize;
+			uiTotalBytes += static_cast<hlULongLong>(uiBufferSize);
+
+			hlValidateFileProgress(const_cast<CDirectoryFile *>(pFile), uiTotalBytes, uiFileBytes, &bCancel);
+		}
+		if(eValidation == HL_VALIDATES_ASSUMED_OK)
+		{
+			eValidation = static_cast<hlULong>(File.uiCRC32) == uiChecksum ? HL_VALIDATES_OK : HL_VALIDATES_CORRUPT;
+		}
+
+		delete checksum;
+
+		this->File.pMapping->Unmap(pFileHeaderDataView);
+	}
+	else
+	{
+		eValidation = HL_VALIDATES_ERROR;
+	}
+
+	return hlTrue;
+}
+
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+hlBool CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::GetFileSizeInternal(const CDirectoryFile *pFile, hlUInt &uiSize) const
+{
+	const SGAFile &File = this->lpFiles[pFile->GetID()];
 
 	uiSize = File.uiSize;
 
 	return hlTrue;
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::GetFileSizeOnDiskInternal(const CDirectoryFile *pFile, hlUInt &uiSize) const
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+hlBool CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::GetFileSizeOnDiskInternal(const CDirectoryFile *pFile, hlUInt &uiSize) const
 {
-	const TSGAFile &File = this->lpFiles[pFile->GetID()];
+	const SGAFile &File = this->lpFiles[pFile->GetID()];
 
 	uiSize = File.uiSizeOnDisk;
 
 	return hlTrue;
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::CreateStreamInternal(const CDirectoryFile *pFile, Streams::IStream *&pStream) const
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+hlBool CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::CreateStreamInternal(const CDirectoryFile *pFile, Streams::IStream *&pStream) const
 {
-	const TSGAFile &File = this->lpFiles[pFile->GetID()];
+	const SGAFile &File = this->lpFiles[pFile->GetID()];
 
 	if(File.uiType == 0)
 	{
-		pStream = new Streams::CMappingStream(*this->File.pMapping, this->File.pHeader->uiFileDataOffset + File.uiOffset, File.uiSizeOnDisk);
+		pStream = new Streams::CMappingStream(*this->File.pMapping, static_cast<const SGAHeader *>(this->File.pHeader)->uiFileDataOffset + File.uiOffset, File.uiSizeOnDisk);
 		return hlTrue;
 	}
 	else
 	{
 #if USE_ZLIB
 		Mapping::CView *pFileDataView = 0;
-		if(this->File.pMapping->Map(pFileDataView, this->File.pHeader->uiFileDataOffset + File.uiOffset, File.uiSizeOnDisk))
+		if(this->File.pMapping->Map(pFileDataView, static_cast<const SGAHeader *>(this->File.pHeader)->uiFileDataOffset + File.uiOffset, File.uiSizeOnDisk))
 		{
 			hlBool bResult = hlFalse;
 			hlByte *lpInflateBuffer = new hlByte[File.uiSize];
@@ -617,8 +898,8 @@ hlBool CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSG
 	}
 }
 
-template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-hlVoid CSGAFile::CSGADirectory<TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile, TSGAFileHeader>::ReleaseStreamInternal(Streams::IStream &Stream) const
+template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+hlVoid CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::ReleaseStreamInternal(Streams::IStream &Stream) const
 {
 	if(Stream.GetType() == HL_STREAM_MEMORY)
 	{

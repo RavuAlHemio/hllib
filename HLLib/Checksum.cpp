@@ -207,6 +207,17 @@ hlULong HLLib::CRC32(const hlByte *lpBuffer, hlUInt uiBufferSize, hlULong uiCRC)
     return uiCRC ^ 0xffffffffUL;
 }
 
+inline hlULong LeftRoate(hlULong value, hlUInt bits)
+{
+	return (value << bits) | (value >> (32 - bits));
+}
+
+inline hlULong SwapEndian(hlULong value)
+{
+	value = ((value << 8) & 0xFF00FF00UL) | ((value >> 8) & 0x00FF00FFUL);
+	return (value << 16) | (value >> 16);
+}
+
 const hlULong lpMD5Table[4][16] =
 {
 	{
@@ -251,11 +262,6 @@ const hlByte lpMD5Padding[64] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-hlULong LeftRoate(hlULong value, hlUInt bits)
-{
-	return (value << bits) | (value >> (32 - bits));
-}
-
 hlVoid HLLib::MD5_Initialize(MD5Context& context)
 {
 	context.lpState[0] = 0x67452301UL;
@@ -286,7 +292,7 @@ hlVoid HLLib::MD5_Update(MD5Context& context, const hlByte *lpBuffer, hlUInt uiB
 			// Round 1.
 			for(hlULong i = 0; i < 16; ++i)
 			{
-				hlULong x = (b & c) | ((~b) & d);
+				hlULong x = d ^ (b & (c ^ d));
 
 				hlULong t = d;
 				d = c;
@@ -360,5 +366,144 @@ hlVoid HLLib::MD5_Finalize(MD5Context& context, hlByte (&lpDigest)[16])
 
 	MD5_Update(context, reinterpret_cast<hlByte*>(&uiLengthInBits), sizeof(uiLengthInBits));
 
-	memcpy(lpDigest, context.lpState, sizeof(lpDigest));
+	for(hlULong i = 0; i < sizeof(context.lpState) / sizeof(context.lpState[0]); ++i)
+	{
+		reinterpret_cast<hlULong*>(lpDigest)[i] = context.lpState[i];
+	}
+}
+
+hlVoid HLLib::SHA1_Initialize(SHA1Context& context)
+{
+	context.lpState[0] = 0x67452301UL;
+	context.lpState[1] = 0xEFCDAB89UL;
+	context.lpState[2] = 0x98BADCFEUL;
+	context.lpState[3] = 0x10325476UL;
+	context.lpState[4] = 0xC3D2E1F0UL;
+	context.uiLength = 0;
+}
+
+hlVoid HLLib::SHA1_Update(SHA1Context& context, const hlByte *lpBuffer, hlUInt uiBufferSize)
+{
+	hlULong uiBlockLength = context.uiLength % sizeof(context.lpBlock);
+	while(uiBlockLength + uiBufferSize >= sizeof(context.lpBlock))
+	{
+		hlULong uiCopyLength = std::min(static_cast<hlULong>(uiBufferSize), static_cast<hlULong>(sizeof(context.lpBlock) - uiBlockLength));
+		memcpy(reinterpret_cast<hlByte*>(context.lpBlock) + uiBlockLength, lpBuffer, uiCopyLength);
+		context.uiLength += uiCopyLength;
+
+		lpBuffer += uiCopyLength;
+		uiBufferSize -= uiCopyLength;
+
+		{
+			hlULong a = context.lpState[0];
+			hlULong b = context.lpState[1];
+			hlULong c = context.lpState[2];
+			hlULong d = context.lpState[3];
+			hlULong e = context.lpState[4];
+
+			hlULong i;
+			hlULong lpExtendedBlock[80];
+
+			// Input needs to be big-endian.
+			for(i = 0; i < 16; ++i)
+			{				
+				lpExtendedBlock[i] = SwapEndian(context.lpBlock[i]);
+			}
+
+			// Extend the 16 dwords to 80.
+			for(; i < 80; ++i)
+			{
+				lpExtendedBlock[i] = LeftRoate(lpExtendedBlock[i - 3] ^ lpExtendedBlock[i - 8] ^ lpExtendedBlock[i - 14] ^ lpExtendedBlock[i - 16], 1);
+			}
+			
+			// Round 1.
+			for(i = 0; i < 20; ++i)
+			{
+				hlULong x = d ^ (b & (c ^ d));
+
+				hlULong t = LeftRoate(a, 5) + x + e + 0x5A827999UL + lpExtendedBlock[i];
+				e = d;
+				d = c;
+				c = LeftRoate(b, 30);
+				b = a;
+				a = t;
+			}
+
+			// Round 2.
+			for(; i < 40; ++i)
+			{
+				hlULong x = b ^ c ^ d;
+
+				hlULong t = LeftRoate(a, 5) + x + e + 0x6ED9EBA1UL + lpExtendedBlock[i];
+				e = d;
+				d = c;
+				c = LeftRoate(b, 30);
+				b = a;
+				a = t;
+			}
+
+			// Round 3.
+			for(; i < 60; ++i)
+			{
+				hlULong x = (b & c) | ((b | c) & d);
+
+				hlULong t = LeftRoate(a, 5) + x + e + 0x8F1BBCDCUL + lpExtendedBlock[i];
+				e = d;
+				d = c;
+				c = LeftRoate(b, 30);
+				b = a;
+				a = t;
+			}
+
+			// Round 4.
+			for(; i < 80; ++i)
+			{
+				hlULong x = b ^ c ^ d;
+
+				hlULong t = LeftRoate(a, 5) + x + e + 0xCA62C1D6UL + lpExtendedBlock[i];
+				e = d;
+				d = c;
+				c = LeftRoate(b, 30);
+				b = a;
+				a = t;
+			}
+
+			context.lpState[0] += a;
+			context.lpState[1] += b;
+			context.lpState[2] += c;
+			context.lpState[3] += d;
+			context.lpState[4] += e;
+		}
+
+		uiBlockLength = 0;
+	}
+
+	memcpy(reinterpret_cast<hlByte*>(context.lpBlock) + uiBlockLength, lpBuffer, uiBufferSize);
+	context.uiLength += uiBufferSize;
+}
+
+hlVoid HLLib::SHA1_Finalize(SHA1Context& context, hlByte (&lpDigest)[20])
+{
+	hlULongLong uiLengthInBits = 8ULL * static_cast<hlULongLong>(context.uiLength);
+
+	hlULong uiBlockLength = context.uiLength % sizeof(context.lpBlock);
+	if(uiBlockLength < sizeof(context.lpBlock) - sizeof(hlULongLong))
+	{
+		SHA1_Update(context, lpMD5Padding, sizeof(context.lpBlock) - sizeof(uiLengthInBits) - uiBlockLength);
+	}
+	else
+	{
+		SHA1_Update(context, lpMD5Padding, 2 * sizeof(context.lpBlock) - sizeof(uiLengthInBits) - uiBlockLength);
+	}
+
+	// Length needs to be big-endian.
+	uiLengthInBits = (uiLengthInBits << 32) | (uiLengthInBits >> 32);
+	uiLengthInBits = static_cast<hlULongLong>(SwapEndian(static_cast<hlULong>(uiLengthInBits & 0xFFFFFFFFULL))) | static_cast<hlULongLong>(SwapEndian(static_cast<hlULong>(uiLengthInBits >> 32))) << 32;
+	SHA1_Update(context, reinterpret_cast<hlByte*>(&uiLengthInBits), sizeof(uiLengthInBits));
+
+	for(hlULong i = 0; i < sizeof(context.lpState) / sizeof(context.lpState[0]); ++i)
+	{
+		// Output needs to be big-endian.
+		reinterpret_cast<hlULong*>(lpDigest)[i] = SwapEndian(context.lpState[i]);
+	}
 }

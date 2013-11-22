@@ -19,8 +19,8 @@ using System.Runtime.InteropServices;
 public sealed class HLLib
 {
     #region Constants
-    public const int HL_VERSION_NUMBER = ((2 << 24) | (4 << 16) | (4 << 8) | 0);
-    public const string HL_VERSION_STRING = "2.4.4";
+    public const int HL_VERSION_NUMBER = ((2 << 24) | (4 << 16) | (5 << 8) | 0);
+    public const string HL_VERSION_STRING = "2.4.5";
 
     public const uint HL_ID_INVALID = 0xffffffff;
 
@@ -206,6 +206,7 @@ public sealed class HLLib
         HL_SGA_ITEM_MODIFIED,
         HL_SGA_ITEM_TYPE,
         HL_SGA_ITEM_CRC,
+        HL_SGA_ITEM_VERIFICATION,
         HL_SGA_ITEM_COUNT,
 
         HL_VBSP_PACKAGE_VERSION = 0,
