@@ -205,7 +205,7 @@ hlBool CVPKFile::MapDataStructures()
 			memset(this->lpArchives, 0, this->uiArchiveCount * sizeof(VPKArchive));
 			for(hlUInt i = 0; i < this->uiArchiveCount; i++)
 			{
-				hlInt iPrinted = sprintf(lpArchiveNumber, "%0.3u", i);
+				hlInt iPrinted = sprintf(lpArchiveNumber, "%.3u", i);
 				if(iPrinted > 0)
 				{
 					strcat(lpArchiveNumber + iPrinted, lpExtension);
