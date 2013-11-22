@@ -9,11 +9,11 @@ Library/Author Information:
 ===========================
 
 ---- General Library Information ----
-Date                     : January 27th, 2013
+Date                     : October 17th, 2013
 Author                   : Ryan Gregg
                            Michael Mohr (Linux Port)
 Title                    : HLLib
-Build                    : 2.4.4
+Build                    : 2.4.5
 Email address            : ryansgregg@hotmail.com (Ryan Gregg)
                            m.mohr@laposte.net (Michael Mohr)
 Home page /  Website     : http://nemesis.thewavelength.net/
@@ -92,6 +92,10 @@ Console Commands (Interactive console mode):
 ==================
 Library Changelog:
 ==================
+
+  v2.4.5
+  - Added support for new SGA file format (v6).
+  - Added support for new SGA file format (v7).
 
   v2.4.4
   - Fixed support for VPK file format (v1).

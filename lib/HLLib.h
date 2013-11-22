@@ -65,8 +65,8 @@ typedef hlSingle		hlFloat;
 #define hlFalse			0
 #define hlTrue			1
 
-#define HL_VERSION_NUMBER	((2 << 24) | (4 << 16) | (4 << 8) | 0)
-#define HL_VERSION_STRING	"2.4.4"
+#define HL_VERSION_NUMBER	((2 << 24) | (4 << 16) | (5 << 8) | 0)
+#define HL_VERSION_STRING	"2.4.5"
 
 #define HL_ID_INVALID 0xffffffff
 
@@ -258,6 +258,7 @@ typedef enum
 	HL_SGA_ITEM_MODIFIED,
 	HL_SGA_ITEM_TYPE,
 	HL_SGA_ITEM_CRC,
+	HL_SGA_ITEM_VERIFICATION,
 	HL_SGA_ITEM_COUNT,
 
 	HL_VBSP_PACKAGE_VERSION = 0,
@@ -1884,19 +1885,31 @@ namespace HLLib
 	// CSGAFile
 	//
 
-	class HLLIB_API CSGAFile : public CPackage
+class HLLIB_API CSGAFile : public CPackage
 	{
 	private:
 		#pragma pack(1)
 
-		struct SGAHeader
+		struct SGAHeaderBase
 		{
 			hlChar lpSignature[8];
 			hlUShort uiMajorVersion;
 			hlUShort uiMinorVersion;
+		};
+
+		struct SGAHeader4 : public SGAHeaderBase
+		{
 			hlByte lpFileMD5[16];
 			hlWChar lpName[64];
 			hlByte lpHeaderMD5[16];
+			hlUInt uiHeaderLength;
+			hlUInt uiFileDataOffset;
+			hlUInt uiDummy0;
+		};
+
+		struct SGAHeader6 : public SGAHeaderBase
+		{
+			hlWChar lpName[64];
 			hlUInt uiHeaderLength;
 			hlUInt uiFileDataOffset;
 			hlUInt uiDummy0;
@@ -1917,6 +1930,12 @@ namespace HLLib
 
 		typedef SGADirectoryHeader<hlUShort> SGADirectoryHeader4;
 		typedef SGADirectoryHeader<hlUInt> SGADirectoryHeader5;
+
+		struct SGADirectoryHeader7 : public SGADirectoryHeader5
+		{
+			hlUInt uiHashTableOffset;
+			hlUInt uiBlockSize;
+		};
 
 		template<typename T>
 		struct SGASection
@@ -1946,7 +1965,7 @@ namespace HLLib
 		typedef SGAFolder<hlUShort> SGAFolder4;
 		typedef SGAFolder<hlUInt> SGAFolder5;
 
-		struct SGAFile
+		struct SGAFile4
 		{
 			hlUInt uiNameOffset;
 			hlUInt uiOffset;
@@ -1957,10 +1976,30 @@ namespace HLLib
 			hlByte uiType;
 		};
 
+		struct SGAFile6 : public SGAFile4
+		{
+			hlUInt uiCRC32;
+		};
+
+		struct SGAFile7 : public SGAFile6
+		{
+			hlUInt uiHashOffset;
+		};
+
 		struct SGAFileHeader
 		{
 			hlChar lpName[256];
 			hlUInt uiCRC32;
+		};
+
+		enum SGAFileVerification
+		{
+			VERIFICATION_NONE,
+			VERIFICATION_CRC,
+			VERIFICATION_CRC_BLOCKS,
+			VERIFICATION_MD5_BLOCKS,
+			VERIFICATION_SHA1_BLOCKS,
+			VERIFICATION_COUNT,
 		};
 
 		#pragma pack()
@@ -1987,22 +2026,99 @@ namespace HLLib
 			virtual hlVoid ReleaseStreamInternal(Streams::IStream &Stream) const = 0;
 		};
 
-		template<typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile, typename TSGAFileHeader>
-		class CSGADirectory : public ISGADirectory
+		// Specialization SGAFile7 and up where the CRC moved to the header and the CRC is of the compressed data and there are stronger hashes.
+		template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+		class CSGASpecializedDirectory : public ISGADirectory
+		{
+		public:
+			typedef TSGAHeader SGAHeader;
+			typedef TSGADirectoryHeader SGADirectoryHeader;
+			typedef TSGASection SGASection;
+			typedef TSGAFolder SGAFolder;
+			typedef TSGAFile SGAFile;
+
+			CSGASpecializedDirectory(CSGAFile& File);
+
+		protected:
+			CSGAFile& File;
+
+			Mapping::CView *pHeaderDirectoryView;
+			const SGADirectoryHeader *pDirectoryHeader;
+			const SGASection *lpSections;
+			const SGAFolder *lpFolders;
+			const SGAFile *lpFiles;
+			const hlChar *lpStringTable;
+
+		public:
+			virtual hlBool GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackageAttribute eAttribute, HLAttribute &Attribute) const;
+
+			virtual hlBool GetFileValidationInternal(const CDirectoryFile *pFile, HLValidation &eValidation) const;
+		};
+
+		// Specialization SGAFile4 where the CRC was stored in a SGAFileHeader located before the file data.
+		template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder>
+		class CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, SGAFile4> : public ISGADirectory
+		{
+		public:
+			typedef TSGAHeader SGAHeader;
+			typedef TSGADirectoryHeader SGADirectoryHeader;
+			typedef TSGASection SGASection;
+			typedef TSGAFolder SGAFolder;
+			typedef CSGAFile::SGAFile4 SGAFile;
+
+			CSGASpecializedDirectory(CSGAFile& File);
+
+		protected:
+			CSGAFile& File;
+
+			Mapping::CView *pHeaderDirectoryView;
+			const SGADirectoryHeader *pDirectoryHeader;
+			const SGASection *lpSections;
+			const SGAFolder *lpFolders;
+			const SGAFile *lpFiles;
+			const hlChar *lpStringTable;
+
+		public:
+			virtual hlBool GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackageAttribute eAttribute, HLAttribute &Attribute) const;
+
+			virtual hlBool GetFileValidationInternal(const CDirectoryFile *pFile, HLValidation &eValidation) const;
+		};
+
+		// Specialization SGAFile6 where the CRC moved to the header and the CRC is of the compressed data.
+		template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder>
+		class CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, SGAFile6> : public ISGADirectory
+		{
+		public:
+			typedef TSGAHeader SGAHeader;
+			typedef TSGADirectoryHeader SGADirectoryHeader;
+			typedef TSGASection SGASection;
+			typedef TSGAFolder SGAFolder;
+			typedef CSGAFile::SGAFile6 SGAFile;
+
+			CSGASpecializedDirectory(CSGAFile& File);
+
+		protected:
+			CSGAFile& File;
+
+			Mapping::CView *pHeaderDirectoryView;
+			const SGADirectoryHeader *pDirectoryHeader;
+			const SGASection *lpSections;
+			const SGAFolder *lpFolders;
+			const SGAFile *lpFiles;
+			const hlChar *lpStringTable;
+
+		public:
+			virtual hlBool GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackageAttribute eAttribute, HLAttribute &Attribute) const;
+
+			virtual hlBool GetFileValidationInternal(const CDirectoryFile *pFile, HLValidation &eValidation) const;
+		};
+
+		template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
+		class CSGADirectory : public CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>
 		{
 		public:
 			CSGADirectory(CSGAFile& File);
 			virtual ~CSGADirectory();
-
-		private:
-			CSGAFile& File;
-
-			Mapping::CView *pHeaderDirectoryView;
-			const TSGADirectoryHeader *pDirectoryHeader;
-			const TSGASection *lpSections;
-			const TSGAFolder *lpFolders;
-			const TSGAFile *lpFiles;
-			const hlChar *lpStringTable;
 
 		public:
 			virtual hlBool MapDataStructures();
@@ -2013,7 +2129,6 @@ namespace HLLib
 			virtual hlBool GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackageAttribute eAttribute, HLAttribute &Attribute) const;
 
 			virtual hlBool GetFileExtractableInternal(const CDirectoryFile *pFile, hlBool &bExtractable) const;
-			virtual hlBool GetFileValidationInternal(const CDirectoryFile *pFile, HLValidation &eValidation) const;
 			virtual hlBool GetFileSizeInternal(const CDirectoryFile *pFile, hlUInt &uiSize) const;
 			virtual hlBool GetFileSizeOnDiskInternal(const CDirectoryFile *pFile, hlUInt &uiSize) const;
 
@@ -2024,18 +2139,23 @@ namespace HLLib
 			hlVoid CreateFolder(CDirectoryFolder *pParent, hlUInt uiFolderIndex);
 		};
 
-		typedef CSGADirectory<SGADirectoryHeader4, SGASection4, SGAFolder4, SGAFile, SGAFileHeader> CSGADirectory4;
-		typedef CSGADirectory<SGADirectoryHeader5, SGASection5, SGAFolder5, SGAFile, SGAFileHeader> CSGADirectory5;
+		typedef CSGADirectory<SGAHeader4, SGADirectoryHeader4, SGASection4, SGAFolder4, SGAFile4> CSGADirectory4;
+		typedef CSGADirectory<SGAHeader4, SGADirectoryHeader5, SGASection5, SGAFolder5, SGAFile4> CSGADirectory5;
+		typedef CSGADirectory<SGAHeader6, SGADirectoryHeader5, SGASection5, SGAFolder5, SGAFile6> CSGADirectory6;
+		typedef CSGADirectory<SGAHeader6, SGADirectoryHeader7, SGASection5, SGAFolder5, SGAFile7> CSGADirectory7;
 
 		friend CSGADirectory4;
 		friend CSGADirectory5;
+		friend CSGADirectory6;
+		friend CSGADirectory7;
 
 	private:
 		static const char *lpAttributeNames[];
 		static const char *lpItemAttributeNames[];
+		static const char *lpVerificationNames[];
 
 		Mapping::CView *pHeaderView;
-		const SGAHeader *pHeader;
+		const SGAHeaderBase *pHeader;
 
 		ISGADirectory* pDirectory;
 
