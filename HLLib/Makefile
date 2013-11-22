@@ -3,7 +3,7 @@ AR		=	ar
 RANLIB		=	ranlib
 HLLIB_VERS	=	2.4.5
 LDFLAGS		=	-shared -Wl,-soname,libhl.so.2
-CXXFLAGS	=	-O2 -g -fpic -funroll-loops -fvisibility=hidden
+CXXFLAGS	=	-O2 -g -fpic -funroll-loops -fvisibility=hidden -std=c++11 -Wall
 PREFIX		=	/usr/local
 sources		=	BSPFile.cpp Checksum.cpp DebugMemory.cpp DirectoryFile.cpp \
 			DirectoryFolder.cpp DirectoryItem.cpp Error.cpp FileMapping.cpp \
