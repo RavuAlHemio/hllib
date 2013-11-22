@@ -443,7 +443,9 @@ hlBool CVBSPFile::GetItemAttributeInternal(const CDirectoryItem *pItem, HLPackag
 					}
 					case HL_VBSP_ITEM_FOUR_CC:
 					{
-						hlAttributeSetUnsignedInteger(&Attribute, this->lpItemAttributeNames[eAttribute], *(hlUInt *)this->pHeader->lpLumps[uiID].lpFourCC, hlTrue);
+						union { const hlChar *c; const hlUInt *u; } fourCC;
+						fourCC.c = this->pHeader->lpLumps[uiID].lpFourCC;
+						hlAttributeSetUnsignedInteger(&Attribute, this->lpItemAttributeNames[eAttribute], *fourCC.u, hlTrue);
 						return hlTrue;
 					}
 					default:
