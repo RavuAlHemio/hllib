@@ -19,7 +19,7 @@ clean:
 install: hlextract
 	install -g root -m 0755 -o root hlextract $(PREFIX)/bin
 
-hlextract: Main.o
-	$(CXX) $(LDFLAGS) -o $@ $^ ../HLLib/libhl.a
+hlextract: Main.o ../HLLib/libhl.a
+	$(CXX) $(LDFLAGS) -o $@ $^
 
 .PHONY: all clean install
