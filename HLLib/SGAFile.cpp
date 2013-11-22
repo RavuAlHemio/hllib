@@ -352,7 +352,7 @@ hlVoid CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSG
 template<typename TSGAHeader, typename TSGADirectoryHeader, typename TSGASection, typename TSGAFolder, typename TSGAFile>
 CDirectoryFolder *CSGAFile::CSGADirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::CreateRoot()
 {
-	CDirectoryFolder *pRoot = new CDirectoryFolder(&File);
+	CDirectoryFolder *pRoot = new CDirectoryFolder(&this->File);
 
 	for(hlUInt i = 0; i < this->pDirectoryHeader->uiSectionCount; i++)
 	{
