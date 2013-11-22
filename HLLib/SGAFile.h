@@ -249,6 +249,12 @@ namespace HLLib
 		class CSGADirectory : public CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>
 		{
 		public:
+			typedef typename CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::SGAHeader SGAHeader;
+			typedef typename CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::SGADirectoryHeader SGADirectoryHeader;
+			typedef typename CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::SGASection SGASection;
+			typedef typename CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::SGAFolder SGAFolder;
+			typedef typename CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, TSGAFile>::SGAFile SGAFile;
+
 			CSGADirectory(CSGAFile& File);
 			virtual ~CSGADirectory();
 
