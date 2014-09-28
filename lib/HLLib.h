@@ -1885,7 +1885,7 @@ namespace HLLib
 	// CSGAFile
 	//
 
-class HLLIB_API CSGAFile : public CPackage
+	class HLLIB_API CSGAFile : public CPackage
 	{
 	private:
 		#pragma pack(1)
@@ -2031,11 +2031,11 @@ class HLLIB_API CSGAFile : public CPackage
 		class CSGASpecializedDirectory : public ISGADirectory
 		{
 		public:
-			typedef TSGAHeader SGAHeader;
-			typedef TSGADirectoryHeader SGADirectoryHeader;
-			typedef TSGASection SGASection;
-			typedef TSGAFolder SGAFolder;
-			typedef TSGAFile SGAFile;
+			typedef typename TSGAHeader SGAHeader;
+			typedef typename TSGADirectoryHeader SGADirectoryHeader;
+			typedef typename TSGASection SGASection;
+			typedef typename TSGAFolder SGAFolder;
+			typedef typename TSGAFile SGAFile;
 
 			CSGASpecializedDirectory(CSGAFile& File);
 
@@ -2060,10 +2060,10 @@ class HLLIB_API CSGAFile : public CPackage
 		class CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, SGAFile4> : public ISGADirectory
 		{
 		public:
-			typedef TSGAHeader SGAHeader;
-			typedef TSGADirectoryHeader SGADirectoryHeader;
-			typedef TSGASection SGASection;
-			typedef TSGAFolder SGAFolder;
+			typedef typename TSGAHeader SGAHeader;
+			typedef typename TSGADirectoryHeader SGADirectoryHeader;
+			typedef typename TSGASection SGASection;
+			typedef typename TSGAFolder SGAFolder;
 			typedef CSGAFile::SGAFile4 SGAFile;
 
 			CSGASpecializedDirectory(CSGAFile& File);
@@ -2089,10 +2089,10 @@ class HLLIB_API CSGAFile : public CPackage
 		class CSGASpecializedDirectory<TSGAHeader, TSGADirectoryHeader, TSGASection, TSGAFolder, SGAFile6> : public ISGADirectory
 		{
 		public:
-			typedef TSGAHeader SGAHeader;
-			typedef TSGADirectoryHeader SGADirectoryHeader;
-			typedef TSGASection SGASection;
-			typedef TSGAFolder SGAFolder;
+			typedef typename TSGAHeader SGAHeader;
+			typedef typename TSGADirectoryHeader SGADirectoryHeader;
+			typedef typename TSGASection SGASection;
+			typedef typename TSGAFolder SGAFolder;
 			typedef CSGAFile::SGAFile6 SGAFile;
 
 			CSGASpecializedDirectory(CSGAFile& File);

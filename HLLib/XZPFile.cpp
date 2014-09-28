@@ -194,16 +194,18 @@ CDirectoryFolder *CXZPFile::CreateRoot()
 	else
 	{
 		// No file name information, just file name CRCs.
+		const hlChar lpLookup[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 		for(hlUInt i = 0; i < this->pHeader->uiDirectoryEntryCount; i++)
 		{
-			hlChar lpTemp[16] = "";
-			const hlChar *lpLookup[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
+			hlChar lpTemp[16];
+
+			hlChar* lpName = lpTemp;
 			for(hlByte *lpCRC = (hlByte *)&this->lpDirectoryEntries[i].uiFileNameCRC; lpCRC < (hlByte *)&this->lpDirectoryEntries[i].uiFileNameCRC + sizeof(hlUInt); lpCRC++)
 			{
-				strcat(lpTemp, lpLookup[(hlByte)(*lpCRC >> 4)]);
-				strcat(lpTemp, lpLookup[(hlByte)(*lpCRC & 0x0F)]);
-
+				*lpName++ = lpLookup[(hlByte)(*lpCRC >> 4)];
+				*lpName++ = lpLookup[(hlByte)(*lpCRC & 0x0F)];
 			}
+			*lpName = '\0';
 
 			pRoot->AddFile(lpTemp, i);
 		}
