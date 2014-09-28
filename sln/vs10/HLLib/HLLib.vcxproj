@@ -84,13 +84,13 @@
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>E:\Projects\Utilities\ZLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\..\3rdParty\zlib\current</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)HLLib.dll</OutputFile>
@@ -102,7 +102,7 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(OutDir)HLLib.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>E:\Projects\Utilities\ZLib\contrib\vstudio\vc10\x86\ZlibStatDebug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\..\3rdParty\ZLib\current\contrib\vstudio\vc10\$(Platform)\ZlibStat$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>zlibstat.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -116,13 +116,13 @@
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>E:\Projects\Utilities\ZLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\..\3rdParty\zlib\current</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)HLLib.dll</OutputFile>
@@ -135,7 +135,7 @@
       <ImportLibrary>$(OutDir)HLLib.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
       <AdditionalDependencies>zlibstat.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>E:\Projects\Utilities\ZLib\contrib\vstudio\vc10\x64\ZlibStatDebug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\..\3rdParty\ZLib\current\contrib\vstudio\vc10\$(Platform)\ZlibStat$(Configuration)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -147,13 +147,13 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;HLLIB_EXPORTS;USE_ZLIB=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>E:\Projects\Utilities\ZLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\..\3rdParty\zlib\current</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)HLLib.dll</OutputFile>
@@ -166,7 +166,7 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(OutDir)HLLib.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>E:\Projects\Utilities\ZLib\contrib\vstudio\vc10\x86\ZlibStatRelease</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\..\3rdParty\ZLib\current\contrib\vstudio\vc10\$(Platform)\ZlibStat$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>zlibstat.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -182,13 +182,13 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;HLLIB_EXPORTS;USE_ZLIB=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>E:\Projects\Utilities\ZLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\..\3rdParty\zlib\current</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <OutputFile>$(OutDir)HLLib.dll</OutputFile>
@@ -201,7 +201,7 @@
       </DataExecutionPrevention>
       <ImportLibrary>$(OutDir)HLLib.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalLibraryDirectories>E:\Projects\Utilities\ZLib\contrib\vstudio\vc10\x64\ZlibStatRelease;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\..\3rdParty\ZLib\current\contrib\vstudio\vc10\$(Platform)\ZlibStat$(Configuration)</AdditionalLibraryDirectories>
       <AdditionalDependencies>zlibstat.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
