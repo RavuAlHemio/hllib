@@ -1,7 +1,7 @@
 CXX		=	g++
 AR		=	ar
 RANLIB		=	ranlib
-HLLIB_VERS	=	2.4.5
+HLLIB_VERS	=	2.4.6
 LDFLAGS		=	-shared -Wl,-soname,libhl.so.2
 CXXFLAGS	=	-O2 -g -fpic -funroll-loops -fvisibility=hidden -std=c++11 -Wall
 PREFIX		=	/usr/local
