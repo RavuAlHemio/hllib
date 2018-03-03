@@ -9,11 +9,11 @@ Library/Author Information:
 ===========================
 
 ---- General Library Information ----
-Date                     : October 17th, 2013
+Date                     : January 22nd, 2017
 Author                   : Ryan Gregg
                            Michael Mohr (Linux Port)
 Title                    : HLLib
-Build                    : 2.4.5
+Build                    : 2.4.6
 Email address            : ryansgregg@hotmail.com (Ryan Gregg)
                            m.mohr@laposte.net (Michael Mohr)
 Home page /  Website     : http://nemesis.thewavelength.net/
@@ -92,6 +92,9 @@ Console Commands (Interactive console mode):
 ==================
 Library Changelog:
 ==================
+
+  v2.4.6
+  - Modified VPF file support to handle the removal of a null terminator from the end of directory.
 
   v2.4.5
   - Added support for new SGA file format (v6).
