@@ -17,6 +17,7 @@ clean:
 	rm -f hlextract Main.o
 
 install: hlextract
+	install -g root -m 0755 -o root -d $(PREFIX)/bin
 	install -g root -m 0755 -o root hlextract $(PREFIX)/bin
 
 hlextract: Main.o ../HLLib/libhl.a

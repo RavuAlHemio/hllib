@@ -26,8 +26,8 @@ install: libhl.so.$(HLLIB_VERS)
 	install -g root -m 0755 -o root -d $(PREFIX)/lib $(PREFIX)/include
 	install -g root -m 0644 -o root libhl.so.$(HLLIB_VERS) $(PREFIX)/lib
 	install -g root -m 0644 -o root ../lib/HLLib.h $(PREFIX)/include/hl.h
-	ln -fs $(PREFIX)/lib/libhl.so.$(HLLIB_VERS) $(PREFIX)/lib/libhl.so.2
-	ln -fs $(PREFIX)/lib/libhl.so.$(HLLIB_VERS) $(PREFIX)/lib/libhl.so
+	ln -fs libhl.so.$(HLLIB_VERS) $(PREFIX)/lib/libhl.so.2
+	ln -fs libhl.so.$(HLLIB_VERS) $(PREFIX)/lib/libhl.so
 
 libhl.so.$(HLLIB_VERS): $(objs)
 	$(CXX) $(LDFLAGS) -o $@ $(objs)
