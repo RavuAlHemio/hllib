@@ -4,6 +4,7 @@
 lib*.so.*
 *.a
 HLExtract/hlextract
+build/
 
 # Windows build spam
 *.obj

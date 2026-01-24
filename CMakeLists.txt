@@ -5,25 +5,19 @@ project(HLLib
     VERSION 2.4.6
 )
 
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
-add_compile_options(-Wall -fPIC)
 
-if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
-    add_compile_options(-g)
-endif()
-if( "${CMAKE_BUILD_TYPE}" STREQUAL "Release" )
-    add_compile_options(-O3)
-endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    # Compile flags specific to GCC or Clang
+    add_compile_options(-Wall -fPIC)
 
-# Flag to make sanitized build for debug
-if (SANITIZER)
-    add_compile_options(-fsanitize=address)
-    add_link_options(-fsanitize=address)
+    # Flag to make sanitized build for debug
+    if (SANITIZER)
+        add_compile_options(-fsanitize=address)
+        add_link_options(-fsanitize=address)
+    endif()
+
 endif()
 
 include_directories(
@@ -66,13 +60,10 @@ add_library(hl STATIC
     HLLib/ZIPFile.cpp
 )
 
-target_compile_options(hl PUBLIC
-    -fvisibility=hidden
-)
-
 add_executable(hlextract
     HLExtract/Main.c
 )
 target_link_libraries(hlextract hl)
 
 install(TARGETS hlextract)
+
